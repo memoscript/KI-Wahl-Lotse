@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VK:KIWahl – Dein Tool-Lotse</title>
+<!-- Optional: Schriftart. Für DSGVO-sensible Seiten diese Zeile entfernen oder die Schrift lokal hosten; Fallback-Schriften sind hinterlegt. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap">
+<style>
+:root{
+  --bg:#EEF2F4; --surface:#FFFFFF; --ink:#14232F; --muted:#4F6272; --line:#C7D3DA;
+  --accent:#5B2FC9; --accent-ink:#FFFFFF; --accent-soft:#ECE6FB;
+  --hl:#E0A800; --hl-bg:#FFF4CC;
+  --warn:#8E3A5E; --warn-bg:#F7E6EE;
+  --ok:#2F6B3F;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1B24; --surface:#172833; --ink:#E6EEF2; --muted:#9FB2BF; --line:#2B4150;
+    --accent:#B7A2FF; --accent-ink:#1B0F40; --accent-soft:#2A2150;
+    --hl:#F4C542; --hl-bg:#3A3213; --warn:#E59AB8; --warn-bg:#3A2230; --ok:#8CD3A0;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1B24; --surface:#172833; --ink:#E6EEF2; --muted:#9FB2BF; --line:#2B4150;
+  --accent:#B7A2FF; --accent-ink:#1B0F40; --accent-soft:#2A2150;
+  --hl:#F4C542; --hl-bg:#3A3213; --warn:#E59AB8; --warn-bg:#3A2230; --ok:#8CD3A0;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:1.0625rem;line-height:1.55}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.2;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(1.6rem,4.5vw,2.2rem)}
+.brand{display:flex;align-items:center;gap:14px;margin:0 0 1rem}
+.logo{width:clamp(64px,16vw,88px);height:auto;flex:none}
+.brand .bar{width:2px;align-self:stretch;background:var(--accent);border-radius:2px;opacity:.55}
+.brand h1{margin:0}
+.brand h1 span{color:var(--accent)}
+.brand .tag2{margin:.1rem 0 0;color:var(--muted);font-weight:700}
+h2{font-size:clamp(1.3rem,3.4vw,1.65rem)}
+h3{font-size:1.15rem}
+h4{font-size:1.05rem}
+p{margin:0 0 .8em}
+.shell{max-width:820px;margin:0 auto;padding:22px 18px 48px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.lead{color:var(--muted);max-width:62ch;margin-bottom:1rem}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+h2:focus{outline:none}
+.tabs{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);margin-bottom:1.3rem;gap:2px}
+.tabs button{font:inherit;font-weight:700;border:0;background:transparent;color:var(--muted);padding:.4rem 1rem;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.prog{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0;margin:0 0 .5rem}
+.prog li{height:7px;border-radius:4px;background:var(--line)}
+.prog li.done{background:var(--accent)}
+.prog li.now{background:var(--hl)}
+.progtxt{color:var(--muted);font-size:.95rem;margin-bottom:1.2rem}
+.opts{display:grid;gap:10px;margin:0 0 1.1rem;padding:0;border:0}
+.opts.two{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:.75rem 1rem;cursor:pointer;position:relative}
+.opt:hover{border-color:var(--accent)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt:has(input:focus-visible){outline:3px solid var(--accent);outline-offset:2px}
+.opt:has(input:disabled){opacity:.5;cursor:not-allowed}
+.opt input{margin-top:.3rem;width:1.15rem;height:1.15rem;accent-color:var(--accent);flex:none}
+.opt b{display:block}
+.opt .d{display:block;color:var(--muted);font-size:.95rem;line-height:1.4}
+.opt .n{display:none;margin-left:auto;flex:none;min-width:1.5rem;height:1.5rem;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:.85rem;font-weight:700;align-items:center;justify-content:center}
+.opt:has(input:checked) .n:not(:empty){display:inline-flex}
+.grp{margin:0 0 1rem}
+.grp h3{font-size:1rem;color:var(--muted);margin-bottom:.4rem}
+legend{font-weight:700;padding:0;margin-bottom:.4rem}
+.count{font-weight:700;margin:.2rem 0 .8rem}
+.scale{background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:.9rem 1rem;margin:0 0 10px}
+.scale .ends{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:.95rem;margin-bottom:.6rem}
+.scale .ends span:last-child{text-align:right}
+.scale .dots{display:flex;justify-content:space-between;max-width:340px;margin:0 auto}
+.scale .dots label{display:flex;padding:4px 8px;cursor:pointer}
+.scale input{width:1.3rem;height:1.3rem;accent-color:var(--accent);cursor:pointer}
+.pause{background:var(--hl-bg);border-left:5px solid var(--hl);border-radius:4px 10px 10px 4px;padding:.75rem 1rem;margin:1.2rem 0}
+.pause b{display:block;margin-bottom:.15rem}
+.pause ul{margin:.3rem 0 0;padding-left:1.2rem}
+.nav{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:1.4rem}
+.btn{font:inherit;font-weight:700;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:.55rem 1.3rem;border-radius:999px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+textarea,input[type=text],select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:.5rem .7rem;width:100%}
+textarea{min-height:5rem;resize:vertical}
+.hint{color:var(--muted);font-size:.95rem}
+.sec{margin:1.9rem 0 0}
+.sum{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:.9rem 1.2rem}
+.sum dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:.3rem 1.2rem}
+.sum dt{font-weight:700}
+.sum dd{margin:0}
+@media (max-width:560px){.sum dl{grid-template-columns:1fr}.sum dd{margin-bottom:.4rem}}
+.tension{background:var(--warn-bg);border-left:5px solid var(--warn);border-radius:4px 10px 10px 4px;padding:.7rem 1rem;margin:0 0 10px}
+.tension b{color:var(--warn)}
+.tension p{margin:.2rem 0 0}
+.cat{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:.9rem 1.2rem;margin:0 0 10px}
+.cat.caution{border-color:var(--warn)}
+.cat p{margin:0 0 .4em}
+.cat .why{color:var(--muted);font-size:.95rem}
+.vorb{background:var(--warn-bg);border-radius:8px;padding:.5rem .8rem;margin:.5rem 0;font-size:.95rem}
+details.crit{background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:.6rem 1rem;margin:0 0 8px}
+details.crit>summary{cursor:pointer;font-weight:700}
+details.crit ul{margin:.4rem 0 0;padding-left:1.2rem}
+details.sm{margin-top:.4rem}
+details.sm>summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:.95rem}
+details.sm ul{margin:.3rem 0 0;padding-left:1.2rem}
+.tag{display:inline-block;font-size:.82rem;font-weight:700;border-radius:999px;padding:.05rem .6rem;margin-left:.4rem;background:var(--hl-bg)}
+.eu-only li.noneu,.noeu-msg[hidden]{display:none}
+.tablewrap{overflow-x:auto;max-width:100%;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);margin-top:.6rem}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:.45rem .6rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+tr:last-child th,tr:last-child td{border-bottom:0}
+.gov{background:var(--accent-soft);border-radius:12px;padding:.9rem 1.2rem}
+.gov ol{margin:.3rem 0 0;padding-left:1.3rem}
+.disc{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:2rem;padding-top:.9rem}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;margin:.6rem 0;align-items:center}
+.ok{color:var(--ok);font-weight:700}
+.checklist label.cl{display:flex;gap:10px;align-items:flex-start;margin:0 0 .4rem}
+.checklist input[type=checkbox]{margin-top:.3rem;width:1.1rem;height:1.1rem;accent-color:var(--accent);flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media print{.tabs,.nav,.row-btns{display:none}body{background:#fff;color:#000}details{display:block}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 76 56" role="img" aria-label="Logo: gestreifter Wal mit Kompassstern">
+        <defs><clipPath id="whaleclip"><path d="M4 32C4 20 16 14 30 14C42 14 50 21 52 29C54 24 58 19 66 17C65 24 62 28 58 31C62 34 65 37 67 44C60 44 55 41 52 37C49 45 40 48 30 48C14 48 4 42 4 32Z"/></clipPath></defs>
+        <g clip-path="url(#whaleclip)" fill="none" stroke="var(--accent)" stroke-width="1.1" stroke-linecap="round">
+          <path d="M0 17Q38 11 76 17"/><path d="M0 20.5Q38 14.5 76 20.5"/><path d="M0 24Q38 18 76 24"/><path d="M0 27.5Q38 21.5 76 27.5"/><path d="M0 31Q38 25 76 31"/><path d="M0 34.5Q38 28.5 76 34.5"/><path d="M0 38Q38 32 76 38"/><path d="M0 41.5Q38 35.5 76 41.5"/><path d="M0 45Q38 39 76 45"/>
+        </g>
+        <path d="M4 32C4 20 16 14 30 14C42 14 50 21 52 29C54 24 58 19 66 17C65 24 62 28 58 31C62 34 65 37 67 44C60 44 55 41 52 37C49 45 40 48 30 48C14 48 4 42 4 32Z" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="13" cy="29" r="3.4" fill="var(--surface)"/><circle cx="13" cy="29" r="1.7" fill="var(--ink)"/>
+        <path d="M30 0.5L32 4.4L36 5.4L32 6.4L30 10.3L28 6.4L24 5.4L28 4.4Z" fill="var(--hl)" stroke="var(--accent)" stroke-width=".8" stroke-linejoin="round"/>
+      </svg>
+      <span class="bar" aria-hidden="true"></span>
+      <div><h1>VK:KI<span>Wahl</span></h1><p class="tag2">Dein Tool-Kompass</p></div>
+    </div>
+    <p class="lead">Kein Ranking und keine Kaufempfehlung. Dieser Weg hilft dir, zuerst Ziel, Werte und Kriterien zu klären, bevor du ein Tool wählst. Alle Schritte sind optional: Du kannst überspringen oder jederzeit direkt zum Ergebnis springen.</p>
+    <div class="tabs" role="group" aria-label="Ansicht wählen">
+      <button type="button" data-action="mode" data-mode="guided" aria-pressed="true">Geführter Weg</button>
+      <button type="button" data-action="mode" data-mode="check" aria-pressed="false">Kriterien-Checkliste</button>
+    </div>
+  </header>
+  <main id="app"></main>
+  <p class="disc">Die Toolkategorien sind Beispielkategorien und keine verifizierte Marktanalyse; genannte Tools sind Beispiele aus einer Sammlung, keine Empfehlung oder Bewertung. Die Hinweise zu Datenschutz und Recht ersetzen keine Rechtsberatung; bei personenbezogenen Daten klärst du den Einsatz mit der oder dem Datenschutzbeauftragten deiner Einrichtung. Deine Eingaben bleiben in deinem Browser.</p>
+</div>
+
+<script>
+"use strict";
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+
+/* ---------- Daten ---------- */
+var CTX = [
+  {id:"lernen", t:"Ich studiere oder lerne", d:"Studium, Ausbildung, Weiterbildung, Selbststudium"},
+  {id:"schule", t:"Ich unterrichte an einer Schule", d:"Unterricht, Förderung, Beratung, Schulorganisation"},
+  {id:"hs", t:"Ich lehre an einer Hochschule", d:"Lehre, Betreuung, Prüfungen, Hochschuldidaktik"},
+  {id:"forschung", t:"Ich forsche", d:"Forschungsdesign, Daten erheben und auswerten, Publizieren"},
+  {id:"arbeit", t:"Ich arbeite in einer Organisation", d:"Unternehmen, Verwaltung, Verein, Selbstständigkeit"},
+  {id:"entscheid", t:"Ich entscheide für andere", d:"Leitung, IT, Beschaffung, Personal, Bildungsverwaltung"}
+];
+var CTXNAME = {lernen:"Studium und Lernen", schule:"Lehre an der Schule", hs:"Lehre an der Hochschule", forschung:"Forschung", arbeit:"Arbeitswelt und Organisationen", entscheid:"Entscheidung für andere"};
+
+var LEHRE = [
+  {id:"material", t:"Lehrmaterialien erstellen", c:["lehre","gpai","media"]},
+  {id:"feedback", t:"Feedback zu Arbeiten geben", c:["lehre","gpai"]},
+  {id:"aufgaben", t:"Aufgaben und Differenzierung entwickeln", c:["lehre","gpai"]},
+  {id:"begleiten", t:"Lernprozesse begleiten", c:["lernen_tools","lehre"]},
+  {id:"barriere", t:"Materialien barrierearm gestalten", c:["access","gpai"]}
+];
+var TASKS = {
+  lernen:[
+    {id:"recherche", t:"Recherchieren und Literatur finden", c:["recherche","gpai"]},
+    {id:"verstehen", t:"Texte und Paper verstehen", c:["docqa","recherche","gpai"]},
+    {id:"pruefung", t:"Prüfungen vorbereiten und üben", c:["lernen_tools","docqa","gpai"]},
+    {id:"code", t:"Programmieren lernen oder Code schreiben", c:["code","gpai"]},
+    {id:"eigene", t:"Mit eigenen Skripten und Notizen lernen", c:["docqa","lokal"]},
+    {id:"mitschrift", t:"Vorlesungen und Gespräche mitschreiben (Audio)", c:["transkr"]}
+  ],
+  schule: LEHRE.concat([{id:"orga", t:"Organisation, Elternkommunikation, Dokumentation", c:["office","gpai"]}]),
+  hs: LEHRE.concat([
+    {id:"betreuung", t:"Abschlussarbeiten betreuen und Lehrveranstaltungen planen", c:["gpai","docqa","office"]},
+    {id:"aufzeichnung", t:"Lehrveranstaltungen untertiteln oder transkribieren", c:["transkr","access"]}
+  ]),
+  forschung:[
+    {id:"design", t:"Forschungsdesign entwickeln und schärfen", c:["gpai","recherche"]},
+    {id:"lit", t:"Literatur recherchieren und auswerten", c:["recherche","docqa"]},
+    {id:"transkr", t:"Interviews und Aufnahmen transkribieren", c:["transkr","lokal"]},
+    {id:"annot", t:"Annotieren, kodieren, Kategorien bilden", c:["qda","lokal"]},
+    {id:"daten", t:"Daten bereinigen und analysieren", c:["daten","code"]},
+    {id:"vis", t:"Ergebnisse visualisieren", c:["daten","media"]},
+    {id:"schreiben", t:"Schreiben und Publizieren", c:["gpai","office","schreib"]}
+  ],
+  arbeit:[
+    {id:"texte", t:"Texte und Präsentationen erstellen", c:["office","gpai","media","schreib"]},
+    {id:"daten", t:"Daten analysieren", c:["daten","code"]},
+    {id:"auto", t:"Abläufe automatisieren", c:["auto","api"]},
+    {id:"meet", t:"Meetings protokollieren und zusammenfassen", c:["meeting","transkr"]},
+    {id:"wissen", t:"Wissen verwalten und finden", c:["wissen","docqa"]},
+    {id:"zus", t:"Im Team zusammenarbeiten", c:["office"]},
+    {id:"code", t:"Software entwickeln oder Skripte schreiben", c:["code","api"]}
+  ],
+  entscheid:[
+    {id:"bedarf", t:"Bedarfe in meiner Einrichtung erheben", c:["gpai","inst"]},
+    {id:"zugang", t:"Allgemeinen KI-Zugang für viele bereitstellen", c:["inst","gpai","office"]},
+    {id:"fach", t:"Fachspezifische Anwendungen prüfen (Lehre, Forschung, Verwaltung)", c:["lehre","recherche","wissen"]},
+    {id:"eigenbetrieb", t:"Eigenbetrieb oder lokale Lösungen prüfen", c:["lokal","inst","api"]},
+    {id:"rahmen", t:"Richtlinien und Rahmen festlegen", c:[]},
+    {id:"beschaff", t:"Vergleich und Beschaffung vorbereiten", c:["inst"]}
+  ]
+};
+
+/* Optionale Aufgabengruppen (g = Gruppenname; erscheinen eingeklappt) */
+var SCHREIB = [
+  {id:"s_thema", g:"Schreibprozess im Detail", t:"Thema oder Fragestellung finden", c:["gpai","recherche"]},
+  {id:"s_aufgabe", g:"Schreibprozess im Detail", t:"Schreibaufgabe verstehen", c:["gpai","docqa"]},
+  {id:"s_recherche", g:"Schreibprozess im Detail", t:"Recherche für den Text", c:["recherche","docqa","gpai"]},
+  {id:"s_struktur", g:"Schreibprozess im Detail", t:"Text strukturieren und planen", c:["gpai","schreib"]},
+  {id:"s_roh", g:"Schreibprozess im Detail", t:"Rohfassung schreiben", c:["gpai","schreib","office"]},
+  {id:"s_ueber", g:"Schreibprozess im Detail", t:"Text überarbeiten und Feedback einholen", c:["schreib","gpai"]}
+];
+var WEITERES = [
+  {id:"x_daten", g:"Daten, Abläufe und mehr", t:"Daten auswerten und visualisieren", c:["daten","code"]},
+  {id:"x_auto", g:"Daten, Abläufe und mehr", t:"Abläufe und Workflows automatisieren", c:["auto","api"]},
+  {id:"x_media", g:"Daten, Abläufe und mehr", t:"Bilder, Folien oder Audio erstellen", c:["media"]},
+  {id:"x_wissen", g:"Daten, Abläufe und mehr", t:"Dokumente und Wissen verwalten und durchsuchen", c:["wissen","docqa"]}
+];
+TASKS.lernen = TASKS.lernen.concat(SCHREIB, WEITERES);
+TASKS.schule = TASKS.schule.concat(WEITERES);
+TASKS.hs = TASKS.hs.concat(WEITERES);
+TASKS.forschung = TASKS.forschung.concat(SCHREIB);
+var EINFACH = {id:"einfach", t:"Texte in Leichte oder einfache Sprache bringen", c:["access","schreib"]};
+TASKS.forschung.push(EINFACH);
+TASKS.arbeit.push(EINFACH);
+TASKS.hs.push({id:"lit", t:"Literatur recherchieren und auswerten", c:["recherche","docqa"]});
+
+/* Toolkategorien: w = Erklärung (1–2 Sätze), a = Darauf achten */
+var CATS = {
+  gpai:{n:"Allgemeine KI-Assistenten (GPAI)", w:"Vielseitige Chat-Modelle für Text, Ideen, Zusammenfassungen und Erklärungen, teils mit Bild, Audio und Dateien. Sie sind flexibel, aber nicht auf eine Aufgabe oder ein Fach zugeschnitten.", cloud:true, a:["Werden Eingaben zum Training genutzt, und lässt sich das abschalten?","Antworten sind nicht automatisch richtig: Fakten und Quellen selbst prüfen.","Kostenlose und bezahlte Versionen unterscheiden sich in Limits, Modellen und Vertrag."]},
+  recherche:{n:"Wissenschaftliche Recherche- und Literaturtools", w:"Spezialisierte Suche über Publikationsdatenbanken mit Zusammenfassungen und Zitationsnetzwerken. Sie sind näher an belegbaren Quellen als allgemeine Chatbots, decken aber nicht jedes Fach gleich gut ab.", cloud:true, a:["Welche Datenbasis steckt dahinter (Abdeckung, Fachgebiete, Paywalls)?","Existieren die genannten Quellen wirklich? Stichproben machen.","Ist die Suche nachvollziehbar und wiederholbar?"]},
+  docqa:{n:"Assistenten für eigene Dokumente", w:"Beantworten Fragen auf Basis hochgeladener PDFs, Notizen oder Wissenssammlungen und verweisen auf Fundstellen. Das ist hilfreich zum Lernen und Auswerten, verlangt aber Vertrauen in den Umgang mit deinen Dokumenten.", cloud:true, local:true, a:["Wo liegen die hochgeladenen Dokumente, und wie lange?","Urheberrecht beachten, wenn du fremde Texte hochlädst.","Werden Fundstellen belegt, sodass du gegenprüfen kannst?"]},
+  lokal:{n:"Lokal betriebene Modelle", w:"Modelle laufen auf eigener Hardware: volle Kontrolle über die Daten, etwa bei personenbezogenen oder Forschungsdaten. Dafür braucht es ausreichend Rechenleistung und Einrichtungsaufwand.", cloud:false, a:["Hardwarebedarf und Einrichtungsaufwand realistisch einschätzen.","Lizenz und Trainingsdaten prüfen: „offen“ ist nicht gleich „Open Source“.","Kleinere Modelle an eigenen Aufgaben testen, nicht nur an Benchmarks."]},
+  inst:{n:"Institutionell bereitgestellte Plattformen", w:"Zugänge, die Hochschule, Schule, Land oder Arbeitgeber lizenzieren oder selbst hosten, meist mit Vertrag, Support und Single Sign-on. Sie sind oft die datenschutzrechtlich einfachste Lösung, aber im Funktionsumfang begrenzt.", cloud:false, a:["Zuerst fragen: Gibt es an deiner Einrichtung schon ein Angebot?","Welche Modelle, Funktionen und Limits sind enthalten?","Vertragsinhalte prüfen: Datenverarbeitung, Löschfristen, Standort."]},
+  code:{n:"Coding-Assistenten und Vibecoding", w:"Unterstützen bei Code-Vervollständigung, Fehlersuche und Erklärungen oder erzeugen ganze Anwendungen aus Beschreibungen. Sie beschleunigen, setzen aber Prüfung des erzeugten Codes voraus.", cloud:true, a:["Gelangt Quellcode oder Zugangsdaten zum Anbieter?","Verstehst du den erzeugten Code? Tests schreiben und Sicherheit prüfen.","Lizenzfragen bei generiertem Code beachten."]},
+  lehre:{n:"Spezialisierte Lehr- und Feedback-Anwendungen", w:"Tools für Unterrichtsmaterial, Aufgaben, Differenzierung und Feedback, oft mit Bezug zu Curricula. Sie sparen Zeit, die pädagogische Verantwortung bleibt bei dir.", cloud:true, a:["Sind pädagogisches Konzept und Curriculumsbezug transparent?","Wer sieht die Daten von Lernenden?","Systeme zur Bewertung von Lernergebnissen gelten nach dem EU AI Act als Hochrisiko-Anwendungen. Bewertungen bleiben deine Entscheidung.","Konsistenz testen: Dieselbe Arbeit mehrfach bewerten lassen und die Ergebnisse vergleichen."]},
+  lernen_tools:{n:"Lernbegleiter und Prüfungsvorbereitung", w:"Tutoring-Dialoge, Karteikarten, Quizze und schrittweise Erklärungen, teils aus eigenen Skripten. Der Nutzen hängt davon ab, ob sie zum eigenen Üben anregen oder nur Antworten liefern.", cloud:true, a:["Fördert das Tool eigenes Üben, oder liefert es nur Antworten?","Fachliche Korrektheit stichprobenartig prüfen.","Datenschutz beim Hochladen von Skripten beachten."]},
+  transkr:{n:"Transkription und Spracherkennung", w:"Wandelt Audio und Video in Text um, teils mit Sprechererkennung und Zeitmarken. Stimmen sind personenbezogene Daten, weshalb der Verarbeitungsort wichtig ist; es gibt auch lokal laufende Varianten.", cloud:true, local:true, a:["Qualität bei Dialekt, Fachbegriffen und Mehrsprachigkeit testen.","Wo wird das Audio verarbeitet, und wie lange gespeichert?","Transkripte immer stichprobenartig gegenhören."]},
+  qda:{n:"Qualitative Analyse und Annotation", w:"Unterstützen beim Kodieren, Bilden von Kategorien und Annotieren von Texten und Interviews, teils mit KI-Vorschlägen. Die Methode bleibt Sache der Forschenden.", cloud:true, local:true, a:["Wie nachvollziehbar sind KI-Vorschläge für Kategorien?","Datenhaltung und Export in offene Formate prüfen.","Passt das Vorgehen zu deinem Forschungsdesign?"]},
+  daten:{n:"Datenanalyse und Visualisierung", w:"Werten Tabellen aus, finden Muster und erzeugen Diagramme per Sprache oder Code. Ergebnisse müssen nachvollziehbar und überprüfbar bleiben.", cloud:true, local:true, a:["Sind die Rechenschritte nachvollziehbar? Ergebnisse gegen eine eigene Auswertung prüfen.","Welche Daten werden hochgeladen?","Code oder Skript mit exportieren, damit alles reproduzierbar ist."]},
+  access:{n:"Barrierefreiheits-Tools", w:"Erzeugen Alternativtexte, Leichte Sprache, Vorlesefunktionen, Untertitel und Strukturhilfen. Sie erleichtern die Arbeit, ersetzen aber nicht die fachliche Prüfung mit der Zielgruppe.", cloud:true, a:["Leichte Sprache braucht fachliche und zielgruppenbezogene Kontrolle.","Ist das Tool selbst barrierefrei bedienbar?","Alt-Texte bei Fachgrafiken testen."]},
+  office:{n:"In Büro- und Kollaborationssuiten integrierte Assistenten", w:"Assistenz direkt in Textverarbeitung, Tabellen, Mail, Präsentation und Videokonferenz. Bequem und nah am Arbeitsalltag, aber an einen Anbieter gebunden.", cloud:true, a:["Auf welche Inhalte greift der Assistent zu (Postfach, Laufwerke)?","Zusätzliche Lizenzkosten einplanen.","Abhängigkeit vom Anbieter (Lock-in) bedenken."]},
+  meeting:{n:"Meeting- und Protokollassistenten", w:"Zeichnen Meetings auf, transkribieren, fassen zusammen und extrahieren Aufgaben. Das spart Zeit, berührt aber die Persönlichkeitsrechte aller Teilnehmenden.", cloud:true, a:["Alle Teilnehmenden müssen informiert sein; je nach Einrichtung ist Mitbestimmung zu beachten.","Wo liegen Aufnahmen und Transkripte?","Zusammenfassungen vor dem Verteilen gegenlesen."]},
+  auto:{n:"Automatisierung, Workflows und Agenten-Builder", w:"Verknüpfen Anwendungen und KI-Schritte zu Abläufen oder bauen eigene Agenten und Chatbots, etwa um Eingänge zu prüfen, zu klassifizieren und zu beantworten. Viele Plattformen sind Open Source und selbst hostbar. Je mehr Systeme angebunden sind, desto wichtiger werden Zugriffsrechte und menschliche Kontrolle.", cloud:true, a:["Welche Systeme erhalten Zugriff?","An kritischen Stellen bleibt ein Mensch beteiligt.","Fehlerfälle und Protokollierung vorab klären.","Selbst gehostet oder Cloud-Version? In der Cloud liegen Workflows, Zugangsdaten und verarbeitete Daten beim Anbieter, und angebundene Modelle können außerhalb der EU laufen."]},
+  media:{n:"Generative Bild-, Präsentations- und Audio-Tools", w:"Erzeugen Illustrationen, Folien, Layouts und Stimmen. Wichtig sind Nutzungsrechte, Kennzeichnung und der kritische Blick auf Stereotype.", cloud:true, a:["Nutzungsrechte an den Ergebnissen klären.","KI-erzeugte Inhalte kennzeichnen.","Bilder auf Stereotype prüfen."]},
+  wissen:{n:"Wissensmanagement und interne Suche", w:"Durchsuchen interne Dokumente, Wikis und Tickets und beantworten Fragen dazu. Sie funktionieren nur so gut wie Rechtekonzept und Qualität der Quellen.", cloud:true, local:true, a:["Ein Rechte- und Zugriffskonzept ist Voraussetzung.","Aktualität und Qualität der Quellen sichern.","Betrieb klären: Cloud, EU-Hosting oder Selbsthosting."]},
+  schreib:{n:"Schreib- und Übersetzungshilfen", w:"Überarbeiten Texte, korrigieren Stil und Grammatik und übersetzen. Sie sind schnell einsetzbar, sehen aber oft den gesamten Text, den du eingibst.", cloud:true, a:["Wohin werden die Texte gesendet, und werden sie gespeichert oder zum Training genutzt?","Fachbegriffe und Tonfall prüfen: Übersetzungen nicht ungeprüft übernehmen.","Prüfungs- und Publikationsregeln beachten: Wie viel Überarbeitung ist in deinem Kontext erlaubt?"]},
+  api:{n:"Modellzugang per API und KI-Gateways", w:"Statt eines fertigen Chatfensters nutzt du Sprachmodelle über eine Schnittstelle (API), etwa in eigenen Anwendungen, Workflows oder Plattformen. Gateways bündeln mehrere Modelle und Anbieter. Das gibt Kontrolle über Oberfläche, Datenfluss und Modellwahl, setzt aber technisches Wissen voraus.", cloud:true, a:["Was geschieht mit Eingaben über die API (Speicherung, Training, Löschfristen)?","Wo laufen die Modelle, und lässt sich das Routing auf bestimmte Länder oder Anbieter begrenzen?","Wer richtet die Anbindung ein und betreut sie, und was kostet die Nutzung bei vielen Anfragen?"]}
+};
+
+/* ---------- Beispiel-Tools (erweiterbar) ----------
+   Eine Zeile pro Tool. Pflicht: n = Name, c = Kategorie-IDs (Schlüssel aus CATS).
+   Optional: u = Link (nur https://), d = Kurznotiz, r = Region (EU oder EFTA), l = Land.
+   Beispiel: {n:"Mein Tool", c:["gpai","lokal"], u:"https://example.org", d:"Open Source"}
+   Die Liste ist eine Beispielsammlung: keine Empfehlung, nicht vollständig. */
+var TOOLS = [
+  /* Allgemeine Assistenten */
+  {n:"ChatGPT (OpenAI)", c:["gpai"]}, {n:"Claude (Anthropic)", c:["gpai"]}, {n:"Google Gemini", c:["gpai"]},
+  {n:"Microsoft Copilot", c:["gpai","office"]}, {n:"Le Chat / Mistral Vibe (Mistral AI)", c:["gpai","code","auto","api"], r:"EU", l:"Frankreich", u:"https://european-alternatives.eu/product/mistral-vibe", d:"Assistent mit Coding-Agent und Konnektoren; Agenten und API für eigene Anwendungen, einige Modelle mit offenen Gewichten"}, {n:"Platform Poe", c:["gpai"]},
+  {n:"Pi.ai", c:["gpai"]}, {n:"You.com", c:["gpai"]}, {n:"Phind", c:["gpai","code"]}, {n:"DeutschlandGPT", c:["gpai"], r:"EU", l:"Deutschland"},
+  {n:"Neuroflash", c:["gpai"], r:"EU", l:"Deutschland"}, {n:"Mindverse", c:["gpai"], r:"EU", l:"Deutschland"}, {n:"Latimer", c:["gpai"]}, {n:"Monica", c:["gpai"]},
+  {n:"Euria (Infomaniak)", c:["gpai"], r:"EFTA", l:"Schweiz", u:"https://european-alternatives.eu/product/euria", d:"läuft auf eigener Infrastruktur in der Schweiz, Open-Source-Modell Qwen3"}, {n:"Solidagent", c:["gpai"], r:"EU", l:"Österreich"}, {n:"Nenna.ai", c:["gpai"], r:"EU", l:"Deutschland"}, {n:"HuggingChat", c:["gpai"]},
+  /* Recherche und Literatur */
+  {n:"Elicit", c:["recherche"]}, {n:"Consensus", c:["recherche"]}, {n:"Semantic Scholar", c:["recherche"]},
+  {n:"ResearchRabbit", c:["recherche"]}, {n:"Inciteful", c:["recherche"]}, {n:"SciSpace", c:["recherche","docqa"]},
+  {n:"Scinapse", c:["recherche"]}, {n:"Litmaps", c:["recherche"]}, {n:"Jenni", c:["recherche","schreib"]},
+  {n:"Keenious", c:["recherche"], r:"EFTA", l:"Norwegen", d:"findet passende Literatur zu eingegebenem Text"}, {n:"Open Knowledge Maps", c:["recherche"], r:"EU", l:"Österreich", d:"gemeinnützig, Open Source, Suche in PubMed und BASE mit visueller Wissenslandkarte, ohne Registrierung"}, {n:"alphaXiv", c:["recherche"]},
+  {n:"Storm / Co-Storm (Stanford)", c:["recherche"]}, {n:"scienceOS", c:["recherche"], r:"EU", l:"Deutschland", u:"https://www.scienceos.ai", d:"Dresdner Startup, laut Sammlung DSGVO-konform und in der EU betrieben; Zitationsnetzwerke, Basisversion kostenlos"}, {n:"Perplexity", c:["recherche"]},
+  {n:"Sakana-AI Deep Research", c:["recherche"]},
+  {n:"AbsClust", c:["recherche"], r:"EU", l:"Deutschland", d:"Rostocker Start-up (Alpha-Version), clustert und visualisiert Literatur datenschutzkonform; nutzt OpenAlex"},
+  {n:"Iris.ai", c:["recherche"], r:"EFTA", l:"Norwegen", d:"Forschungsassistent für Literatursuche und -auswertung"},
+  /* Eigene Dokumente und Wissen */
+  {n:"NotebookLM (Google)", c:["docqa"]}, {n:"ChatPDF", c:["docqa"]}, {n:"chatPDF.guru", c:["docqa"]}, {n:"PDF.ai", c:["docqa"]},
+  {n:"AnythingLLM", c:["docqa","lokal"]}, {n:"Notion (mit KI)", c:["wissen","office"]},
+  /* Lokal und offen */
+  {n:"Ollama", c:["lokal"], u:"https://ollama.com", d:"Open Source, führt offene Modelle lokal aus"}, {n:"LM Studio", c:["lokal"], u:"https://lmstudio.ai", d:"Oberfläche zum lokalen Ausführen offener Modelle; die Anwendung selbst ist nicht Open Source"}, {n:"Jan", c:["lokal"]}, {n:"GPT4All", c:["lokal"]}, {n:"Docker", c:["lokal"]},
+  {n:"Llama 3.1 (Meta)", c:["lokal"]}, {n:"Nemotron (NVIDIA)", c:["lokal"]}, {n:"LeoLM", c:["lokal"]}, {n:"OpenGPT-X / Teuken", c:["lokal"], r:"EU", l:"Deutschland"}, {n:"TrustLLM", c:["lokal"], r:"EU", d:"europäisches Kooperationsprojekt für offene, vertrauenswürdige Sprachmodelle"},
+  /* Transkription und Sprache */
+  {n:"Whisper (OpenAI, Open Source)", c:["transkr","lokal"]}, {n:"noScribe", c:["transkr","lokal"], u:"https://github.com/kaixxx/noScribe", d:"Open Source, Transkription läuft lokal auf dem eigenen Rechner, entwickelt für qualitative Forschung"}, {n:"aTrain", c:["transkr","lokal"]}, {n:"Voiceshine", c:["transkr"], r:"EU", l:"Österreich", d:"Transkription von Interviews; laut Sammlung Server in Frankfurt, keine Speicherung, kein Training mit den Daten"},
+  {n:"SeamlessM4T (Meta)", c:["transkr"]}, {n:"DeepL Voice", c:["transkr","access"], r:"EU", l:"Deutschland"}, {n:"LlamaOCR (Handschrift)", c:["transkr"]},
+  /* Schreiben, Übersetzen, Sprache */
+  {n:"DeepL", c:["schreib"], r:"EU", l:"Deutschland", u:"https://european-alternatives.eu/product/deepl", d:"Übersetzung"}, {n:"DeepL Write", c:["schreib"], r:"EU", l:"Deutschland"}, {n:"Grammarly", c:["schreib"]}, {n:"QuillBot", c:["schreib"]},
+  {n:"Wortliga", c:["schreib"], r:"EU", l:"Deutschland", d:"laut Sammlung Hosting in Deutschland, Texte analysieren und überarbeiten"}, {n:"Textshine", c:["schreib"], r:"EU", l:"Österreich", d:"Korrektorat, Wiener Start-up"}, {n:"TextCortex", c:["schreib","docqa"], r:"EU", l:"Deutschland", d:"Berliner Start-up, u. a. Dokumentenchat"}, {n:"Duden Mentor", c:["schreib"]}, {n:"capito (Leichte Sprache)", c:["access","schreib"], r:"EU", l:"Österreich"},
+  {n:"Summ.ai (Leichte Sprache)", c:["access","schreib"], r:"EU", l:"Deutschland", u:"https://summ-ai.com", d:"Texte in Leichte und Einfache Sprache übersetzen, Münchner Start-up"},
+  /* Lehre */
+  {n:"fobizz", c:["lehre","gpai"], r:"EU", l:"Deutschland", u:"https://fobizz.com", d:"KI-Tools und Fortbildungen für Lehrkräfte; laut Berichten Verarbeitung auf Servern in Deutschland, Modelle externer Anbieter"}, {n:"myTAI", c:["lehre"], r:"EU", l:"Deutschland"}, {n:"FelloFish (früher Fiete.ai)", c:["lehre"], r:"EU", l:"Deutschland", u:"https://www.fellofish.com/", d:"KI-Feedback zu Schülertexten im Schreibprozess"}, {n:"Lehrpilot", c:["lehre"], r:"EU", l:"Deutschland", d:"KI-gestützte Unterrichtsplanung, Kieler Start-up"},
+  {n:"Teachino", c:["lehre"], r:"EU", l:"Österreich"}, {n:"School to go", c:["lehre"], r:"EU", l:"Deutschland", d:"Unterrichtsvorbereitung, Saarbrücken"}, {n:"StudyLabs", c:["lehre","lernen_tools"]}, {n:"Hesse.ai", c:["lernen_tools"], r:"EU", l:"Deutschland", d:"Start-up aus Passau von Studierenden: Karteikarten und Essays aus Stichwörtern"}, {n:"Edpuzzle", c:["lehre"]},
+  /* Daten, Visualisierung, Medien */
+  {n:"Rows", c:["daten"], r:"EU", l:"Portugal", d:"Tabellenkalkulation mit KI-Analyse"}, {n:"Julius", c:["daten"]}, {n:"Flourish", c:["daten"]}, {n:"KNIME", c:["daten","lokal"], r:"EFTA", l:"Schweiz", u:"https://www.knime.com", d:"quelloffene Plattform für Datenanalyse mit visuellen Workflows, lokal nutzbar"},
+  {n:"MAXQDA (AI Assist)", c:["qda"], r:"EU", l:"Deutschland", u:"https://www.maxqda.com", d:"Software für qualitative Datenanalyse (VERBI, Berlin); KI-Zusatzmodul AI Assist, laut Hersteller Verarbeitung und Speicherung in der EU; kostenpflichtig"}, {n:"Napkin.ai", c:["daten","media"]},
+  {n:"Canva", c:["media"]}, {n:"Gamma", c:["media"]}, {n:"SlidesGPT", c:["media"]}, {n:"Tome", c:["media"]}, {n:"Adobe Firefly", c:["media"]},
+  {n:"Clipdrop", c:["media"]}, {n:"Microsoft Designer", c:["media"]}, {n:"Ideogram", c:["media"]}, {n:"Leonardo.ai", c:["media"]},
+  {n:"Reve", c:["media"]}, {n:"Getty Images (KI-Bilder)", c:["media"]}, {n:"RunwayML", c:["media"]}, {n:"Kaiber", c:["media"]},
+  {n:"Anymate Me", c:["media"]}, {n:"Illuminate (Google)", c:["media"]}, {n:"PodcastGen", c:["media"]}, {n:"Jellypod", c:["media"]},
+  {n:"ElevenLabs", c:["media"]},
+  /* Europäische Anbieter (Quelle: european-alternatives.eu, Firmensitz in EU/EFTA; Stand Oktober 2026) */
+  {n:"Lumo (Proton)", c:["gpai"], r:"EFTA", l:"Schweiz", u:"https://european-alternatives.eu/product/lumo", d:"Datenschutz-Fokus, kostenloser Tarif"},
+  {n:"GreenPT", c:["gpai","api"], r:"EU", l:"Niederlande", u:"https://european-alternatives.eu/product/greenpt", d:"EU-gehostet, auch API"},
+  {n:"CamoCopy", c:["gpai"], r:"EU", l:"Luxemburg", u:"https://european-alternatives.eu/product/camocopy", d:"EU-gehostet, Open-Source-Modelle als Standard"},
+  {n:"xPrivo", c:["gpai"], r:"EU", l:"Luxemburg", u:"https://european-alternatives.eu/product/xprivo", d:"Open Source, ohne Konto nutzbar, EU-gehostet"},
+  {n:"Reverso", c:["schreib"], r:"EU", l:"Frankreich", u:"https://european-alternatives.eu/product/reverso", d:"Übersetzung und Grammatikprüfung"},
+  {n:"ModernMT", c:["schreib"], r:"EU", l:"Italien", u:"https://european-alternatives.eu/product/modernmt", d:"lernt aus Korrekturen, nutzt Dokumentkontext"},
+  {n:"eTranslation (EU-Kommission)", c:["schreib"], r:"EU", l:"Belgien", u:"https://european-alternatives.eu/product/european-commission-etranslation", d:"kostenlos für Verwaltungen, Hochschulen und KMU in der EU, Registrierung nötig"},
+  {n:"Supertext", c:["schreib"], r:"EFTA", l:"Schweiz", u:"https://european-alternatives.eu/product/supertext", d:"KI-Übersetzung, auch Dateien und PDFs"},
+  {n:"Scaleway Generative APIs", c:["api"], r:"EU", l:"Frankreich", u:"https://european-alternatives.eu/product/scaleway-generative-apis", d:"OpenAI-kompatible API, EU-gehostet, Gratis-Kontingent"},
+  {n:"Nebius Token Factory", c:["api"], r:"EU", l:"Niederlande", u:"https://european-alternatives.eu/product/nebius-token-factory", d:"verwaltete Inferenz für Open-Source-Modelle, EU-gehostet"},
+  {n:"OVHcloud AI Endpoints", c:["api"], r:"EU", l:"Frankreich", u:"https://european-alternatives.eu/product/ovhcloud-ai-endpoints", d:"API für Sprach-, Bild- und Sprachmodelle, EU-gehostet"},
+  {n:"IONOS AI Model Hub", c:["api"], r:"EU", l:"Deutschland", u:"https://european-alternatives.eu/product/ionos-ai-model-hub", d:"Open-Source-Modelle, Dokumentensammlungen, RAG, EU-gehostet"},
+  {n:"Cortecs", c:["api"], r:"EU", l:"Österreich", u:"https://european-alternatives.eu/product/cortecs", d:"KI-Gateway, Routing auf EU-Anbieter beschränkbar"},
+  {n:"Melious", c:["api"], r:"EU", l:"Deutschland", u:"https://european-alternatives.eu/product/melious", d:"KI-Gateway, nur europäische Anbieter, über 60 offene Modelle"},
+  {n:"EUrouter", c:["api"], r:"EU", l:"Niederlande", u:"https://european-alternatives.eu/product/eurouter", d:"KI-Gateway, über 100 Modelle, Option für EU-Anbieter"},
+  {n:"LLMrouter.eu", c:["api"], r:"EU", l:"Deutschland", u:"https://european-alternatives.eu/product/llmrouter-eu", d:"KI-Gateway, auch im eigenen Kubernetes-Cluster betreibbar"},
+  /* Weitere Plattformen (Quellen: Tool-Sammlung, Presseberichte; Stand Oktober 2026) */
+  {n:"Langdock", c:["gpai","inst","auto"], r:"EU", l:"Deutschland", d:"KI-Plattform für Teams, bündelt Modelle mehrerer Anbieter; EU-Hosting laut Drittquelle über Microsoft Azure"},
+  {n:"AIS.chat (vormals telli)", c:["lehre","gpai","inst"], r:"EU", l:"Deutschland", u:"https://ais-chat.schule/", d:"KI-Chatbot der Länder für Schulen (Projekt AIS, FWU), Open Source, Zugang über das Schulportal; angebundene Modelle teils von externen Anbietern, Verfügbarkeit und Bedingungen je Bundesland prüfen"},
+  /* Hochschulen */
+  {n:"ChatAI (GWDG)", c:["inst","gpai"], r:"EU", l:"Deutschland", u:"https://kisski.gwdg.de/", d:"Zugang für Hochschulen über die Academic Cloud; offene Modelle laufen auf GWDG-Infrastruktur in Göttingen, externe Modelle (z. B. OpenAI, Anthropic) sind gekennzeichnet und werden anders verarbeitet"},
+  {n:"HAWKI (HAWK Hildesheim/Holzminden/Göttingen)", c:["inst","gpai"], r:"EU", l:"Deutschland", d:"Open-Source-Chatoberfläche für Hochschulen, wird von Einrichtungen selbst betrieben (z. B. als Basis von LUHKI)"},
+  /* Agenten und Workflows bauen */
+  {n:"n8n", c:["auto"], r:"EU", l:"Deutschland", u:"https://n8n.io", d:"Workflow-Automatisierung mit KI-Agenten-Knoten, selbst hostbar; Fair-Code-Lizenz (quelloffen, aber nicht im strengen Sinne Open Source); Cloud-Variante separat prüfen"},
+  {n:"Flowise", c:["auto"], u:"https://flowiseai.com", d:"visueller Baukasten für Agenten und Chatbots, Open Source (Apache 2.0), selbst hostbar; Cloud-Variante separat prüfen"},
+  {n:"Langflow", c:["auto"], u:"https://www.langflow.org", d:"visueller Baukasten für Agenten, RAG und MCP-Server, Open Source (MIT), selbst hostbar; Cloud-Variante separat prüfen"},
+  {n:"Dify", c:["auto"], u:"https://dify.ai", d:"Plattform für KI-Apps, Agenten und RAG, selbst hostbar; Open-Source-Lizenz mit Zusatzbedingungen; Cloud-Variante separat prüfen"},
+  {n:"Activepieces", c:["auto"], u:"https://www.activepieces.com", d:"Automatisierung mit KI-Bausteinen, Open Source, selbst hostbar; Cloud-Variante separat prüfen"},
+  {n:"schulKI", c:["lehre","gpai"], d:"KI-Zugänge für Lerngruppen"},
+  /* Code */
+  {n:"GitHub Copilot", c:["code"]},
+  {n:"Lovable", c:["code"], r:"EU", l:"Schweden", u:"https://lovable.dev", d:"Vibecoding-Plattform; Firmensitz Schweden, aber Datenverarbeitung nicht ausschließlich in der EU: Hosting-Region wählbar, KI-Modelle und Unterauftragnehmer sitzen teils in den USA; vorher Auftragsverarbeitungsvertrag und Unterauftragnehmerliste prüfen"}
+];
+function examplesFor(id){ return TOOLS.filter(function(t){ return t.c.indexOf(id)>-1; }).sort(function(a,b){ return a.n.localeCompare(b.n,"de"); }); }
+
+var DATA = [
+  {id:"low", t:"Öffentlich oder unkritisch", d:"Eigene Texte, öffentliche Quellen, Übungsaufgaben"},
+  {id:"mid", t:"Intern", d:"Unveröffentlichte Entwürfe, Interna, urheberrechtlich geschütztes Material Dritter"},
+  {id:"personal", t:"Personenbezogen", d:"Namen, Noten, Bewertungen, Daten von Lernenden, Studierenden oder Beschäftigten"},
+  {id:"high", t:"Besonders sensibel", d:"Gesundheits- oder Interviewdaten, Vertrauliches, Geschäftsgeheimnisse, Forschungsdaten mit Personenbezug"}
+];
+var DATANAME = {low:"öffentlich oder unkritisch", mid:"intern", personal:"personenbezogen", high:"besonders sensibel"};
+
+/* Kriterien: e = Erklärung, q = Prüffrage, w = Wo prüfen */
+var GROUPS = [
+  {id:"nutzung", t:"Bedienung und Nutzung"},
+  {id:"leistung", t:"Leistung"},
+  {id:"kosten", t:"Kosten und Bedingungen"},
+  {id:"daten", t:"Daten und Recht"},
+  {id:"offen", t:"Offenheit und Betrieb der Modelle"},
+  {id:"verantwortung", t:"Verantwortung, Ethik und Nachhaltigkeit"}
+];
+var CRIT = [
+  {id:"anwendungsfall", g:"nutzung", core:true, t:"Anwendungsfall, Funktionen und Mehrwert", e:"Ob das Tool die Funktionen mitbringt, die du für deinen Anwendungsfall brauchst, und ob es ein Problem besser, schneller oder zugänglicher löst als bisherige Wege. Prüfe auch, ob mehrere Tools für einzelne Aufgaben sinnvoller sind als eines für alles.", q:"Löst das Tool ein konkretes Problem besser, schneller oder zugänglicher als mein bisheriger Weg, und hat es die Funktionen, die ich wirklich brauche?", w:"Eigene Aufgabenliste mit den Funktionen abgleichen; Funktionsübersicht und Testzugang nutzen."},
+  {id:"zielgruppe", g:"nutzung", t:"Zielgruppen- und Kontexttauglichkeit", e:"Ob das Tool zu Alter, Vorbildung, Fachkultur, Arbeitsprozess und Verantwortungsrollen passt, etwa in Schule, Hochschule, Forschung oder Arbeitswelt.", q:"Passt es zu meiner Zielgruppe (Alter, Vorbildung, Fach) und zu meinem Arbeitsprozess?", w:"Altersfreigaben, Fachbezug und Einsatzszenarien des Anbieters; Test mit einer kleinen Probegruppe."},
+  {id:"passung", g:"nutzung", t:"Didaktische und arbeitsbezogene Passung", e:"Ob das Tool Lernziele, Reflexion, Zusammenarbeit, individuelle Förderung oder produktives Arbeiten unterstützt, statt nur schnell Texte oder Aufgaben zu erzeugen.", q:"Unterstützt es meine Lern- oder Arbeitsziele und fördert es eigenes Denken, statt nur Ergebnisse zu liefern?", w:"Mit einer typischen Lern- oder Arbeitssituation ausprobieren; didaktische Konzepte des Anbieters ansehen."},
+  {id:"usability", g:"nutzung", core:true, t:"Bedienfreundlichkeit und Einführungsaufwand", e:"Wie schnell du ohne Einarbeitung zu brauchbaren Ergebnissen kommst und wie viel Schulung, Support und Begleitung die Einführung braucht. Wichtig, wenn viele Menschen das Tool nutzen sollen; mächtige Spezialtools sind oft komplizierter.", q:"Komme ich ohne lange Einarbeitung zu einem brauchbaren Ergebnis? Wie hoch sind Schulungs- und Supportbedarf?", w:"Mit einer echten eigenen Aufgabe ausprobieren, nicht mit der Demo; Dokumentation und Supportangebot ansehen."},
+  {id:"access", g:"nutzung", core:true, t:"Barrierefreiheit und Chancengleichheit", e:"Nutzbar mit Tastatur, Screenreader und ausreichendem Kontrast, mehrsprachig und ohne Zusatzkosten auf vorhandenen Geräten. Entscheidend, wenn Menschen mit Beeinträchtigungen oder unterschiedlichen Voraussetzungen das Tool nutzen; belegt meist nur eine Barrierefreiheitserklärung.", q:"Ist das Tool mit assistiven Funktionen nutzbar, mehrsprachig und ohne Zusatzkosten auf vorhandenen Geräten zugänglich?", w:"Barrierefreiheitserklärung (WCAG) des Anbieters, eigener Kurztest, Preis- und Geräteangaben."},
+  {id:"sprache", g:"nutzung", core:true, t:"Sprache, Fachsprache und Modalität", e:"Wie gut das Tool in der Sprache funktioniert, in der du arbeitest, auch in der jeweiligen Fachsprache, und ob neben Text auch Bild, Audio oder Dateien verarbeitet werden (Modalität). Viele Modelle sind in großen Sprachen deutlich stärker als in kleineren.", q:"Funktioniert es in meiner Sprache und Fachsprache, und verarbeitet es die Formate (Text, Bild, Audio, Dateien), die ich brauche?", w:"Eigene Beispieltexte mit Fachbegriffen und Beispieldateien in den benötigten Sprachen testen."},
+  {id:"integration", g:"nutzung", t:"Technische Integration und Kompatibilität", e:"Ob das Tool zu vorhandenen Geräten, Browsern und Werkzeugen wie Lernplattform, Repositorien, Office sowie Identitäts- und Rechtemanagement passt. Das spart Aufwand, kann aber an einen Anbieter binden.", q:"Funktioniert es auf meinen Geräten und Browsern, und lässt es sich an meine Werkzeuge und Anmeldesysteme anbinden?", w:"Systemanforderungen, Dokumentation zu Integrationen, Plug-ins, API und Single Sign-on; Rücksprache mit der IT."},
+  {id:"qualitaet", g:"leistung", core:true, t:"Ergebnisqualität, Zuverlässigkeit und Quellenbezug", e:"Wie korrekt, aktuell, nachvollziehbar und quellenbasiert die Ergebnisse bei deinen konkreten Aufgaben sind. Das lässt sich nur mit eigenen Testfällen beurteilen, nicht aus Werbung.", q:"Wie korrekt und aktuell sind die Ergebnisse, und lassen sie sich mit Quellen überprüfen und belegen?", w:"Fünf eigene Testaufgaben festlegen, mehrere Tools damit vergleichen und Quellenangaben stichprobenartig prüfen."},
+  {id:"benchmarks", g:"leistung", t:"Benchmarks, Modellgröße und Kontextfenster", e:"Vergleichstests, Parameterzahl und die Textmenge, die auf einmal verarbeitet werden kann. Gute Orientierung, sagen aber wenig, wenn der Test nicht zu deiner Aufgabe passt.", q:"Welche Benchmarks passen zu meiner Aufgabe, und wie lang darf mein Input sein?", w:"Unabhängige Vergleiche wie artificialanalysis.ai und die Modellkarten der Anbieter."},
+  {id:"spezial", g:"leistung", t:"Allgemeine oder spezialisierte KI", e:"Allgemeine KI (GPAI) kann vieles, aber nichts ganz genau. Spezialisierte Anwendungen, etwa für wissenschaftliche Recherche oder Lehrfeedback, passen enger, sind aber weniger flexibel.", q:"Reicht eine allgemeine KI, oder braucht meine Aufgabe eine fachspezifische Anwendung?", w:"Beide Varianten an derselben Aufgabe vergleichen."},
+  {id:"kosten", g:"kosten", core:true, t:"Kosten und langfristige Tragfähigkeit", e:"Was das Tool insgesamt kostet, auch über eine Pilotphase hinaus: Lizenz-, Nutzungs- und Skalierungskosten. Kostenlose Angebote haben oft Limits oder schwächere Datenschutzzusagen; Gruppenlizenzen sind oft günstiger.", q:"Was kostet es insgesamt, auch bei mehr Nutzenden und nach der Pilotphase? Reicht die kostenlose Version, und gibt es einen Testzeitraum?", w:"Preisseite, Lizenzbedingungen, Testzeitraum, Rücksprache mit der Beschaffung."},
+  {id:"bedingungen", g:"kosten", t:"Transparente Bedingungen und Nutzungsrichtlinien", e:"Wie klar Preise, Limits, Änderungen, Rechte an Eingaben und Ergebnissen, erlaubte Nutzung und Altersgrenzen geregelt sind. Besonders wichtig beim Einsatz mit Minderjährigen.", q:"Sind Bedingungen verständlich? Wem gehören Eingaben und Ergebnisse? Gibt es Altersgrenzen?", w:"AGB, Terms of Service, Usage Policy; Änderungsklauseln beachten."},
+  {id:"anbieter", g:"kosten", t:"Anbieterstabilität, Support und Exit-Option", e:"Wie verlässlich der Anbieter ist und ob es Support, Dokumentation und Community sowie exportierbare Daten und einen realistischen Wechsel- oder Abschaltweg gibt. Dazu gehört ein schneller, einfacher Kündigungsweg: kurze Fristen, Kündigung ohne Umwege und Löschung der Daten nach Vertragsende.", q:"Ist der Anbieter verlässlich, gibt es Support, und kann ich Daten exportieren, schnell kündigen und bei Bedarf wechseln?", w:"Anbieterprofil, Dokumentation, Exportfunktionen, Vertragslaufzeit, Kündigungsfristen und Kündigungsweg (online oder nur schriftlich?)."},
+  {id:"recht", g:"daten", core:true, t:"Rechtliche Zulässigkeit", e:"Ob der Einsatz mit DSGVO, Urheberrecht, gegebenenfalls EU AI Act, Beschäftigtenschutz und institutionellen Vorgaben vereinbar ist. Das klärst du am besten vor dem Einsatz mit Datenschutz- und Rechtsstellen.", q:"Ist der Einsatz mit DSGVO, Urheberrecht, AI Act und den Vorgaben meiner Einrichtung vereinbar?", w:"Regelwerke und Handreichungen deiner Einrichtung, Datenschutzbeauftragte, Rechtsabteilung."},
+  {id:"datenschutz", g:"daten", core:true, t:"Datenschutz und Datenverarbeitung", e:"Was mit deinen Eingaben passiert: Erhebung, Speicherung, Weitergabe an Dritte, Training, Löschung, Auftragsverarbeitungsvertrag. Zentral bei personenbezogenen und sensiblen Daten; gut ist eine datensparsame Option.", q:"Welche Daten werden erhoben, wo gespeichert, weitergegeben oder zum Training genutzt? Gibt es einen AV-Vertrag, klare Löschfristen und eine datensparsame Option?", w:"Datenschutzerklärung, Einstellungen zum Training, AV-Vertrag, Datenschutzbeauftragte."},
+  {id:"registrierung", g:"daten", t:"Registrierung und Zugang", e:"Ob eine Registrierung nötig ist, welche Angaben du dafür preisgeben musst und ob sich Konto und Daten löschen lassen. Manche Tools laufen auch ohne Konto.", q:"Ist eine Registrierung erforderlich, welche Daten muss ich preisgeben, und kann ich Konto und Daten löschen?", w:"Anmeldeseite, Kontoeinstellungen, Datenschutzerklärung."},
+  {id:"sitz", g:"daten", t:"Unternehmenssitz, Serverstandort und Rechtsraum", e:"Wo der Anbieter und seine Muttergesellschaft sitzen, wo die Server stehen und wo Unterauftragnehmer, Support und Administration angesiedelt sind. Das bestimmt, welches Recht gilt, ob Daten in Drittländer übermittelt werden und welche Behörden zugreifen können. Der Serverstandort ist entscheidend, ersetzt aber nicht die Frage nach dem Rechtsraum: Auch ein Rechenzentrum in der EU kann zu einem Anbieter aus einem Drittland gehören. EU-Hosting senkt Risiken, beseitigt sie aber nicht.", q:"Wo sitzen Anbieter und Muttergesellschaft, wo stehen die Server (Land, Rechenzentrum), und welche Unterauftragnehmer und Drittlandübermittlungen gibt es?", w:"Impressum, Datenschutzerklärung, Liste der Unterauftragnehmer, AV-Vertrag, Angaben zum Rechenzentrum und zu Standardvertragsklauseln."},
+  {id:"sicherheit", g:"daten", t:"Sicherheit und Missbrauchsschutz", e:"Wie gut Zugriffs-, Inhalts- und Jugendschutz funktionieren, ob Eingaben verschlüsselt werden und wie das Tool vor Prompt-Injection, betrügerischen Inhalten und unerwünschten Automatisierungen schützt.", q:"Welche Schutzmaßnahmen (Zugriffsrechte, Verschlüsselung, Inhaltsfilter, Jugendschutz, Schutz vor Prompt-Injection) gibt es?", w:"Sicherheitsdokumentation, Zertifizierungen, Rechtekonzept; Rücksprache mit der IT-Sicherheit."},
+  {id:"lokal", g:"offen", t:"Lokale Installation", e:"Das Modell läuft auf eigener Hardware: volle Kontrolle über die Daten, etwa bei personenbezogenen oder Forschungsdaten. Dafür braucht es ausreichend Rechenleistung und Einrichtungsaufwand.", q:"Kann das Tool lokal oder offline laufen, und was brauche ich dafür?", w:"Installationsanleitung, Hardwareanforderungen, Lizenz."},
+  {id:"opensource", g:"offen", t:"Open Source", e:"Offen einsehbare Software oder Modelle: nachprüfbar, selbst betreibbar und anpassbar, aber oft mit mehr Eigenaufwand und nicht immer auf Spitzenniveau. „Offen“ kann offene Gewichte, offenen Code oder offene Trainingsdaten meinen; dazwischen gibt es Abstufungen mit eigener Lizenz.", q:"Was genau ist offen (Gewichte, Code, Daten), und unter welcher Lizenz?", w:"Lizenztext und Modellkarte."},
+  {id:"api", g:"offen", t:"Nutzung per API oder Schnittstelle", e:"Zwischenform zwischen offen und geschlossen: Du nutzt ein Modell nicht über die Oberfläche des Anbieters, sondern per Schnittstelle (API) in eigenen Anwendungen, Workflows oder Plattformen. So steuerst du Oberfläche, Datenfluss und Modellwahl selbst und kannst Modelle leichter wechseln. Die Eingaben gehen aber weiter an den Anbieter oder Hoster, und die Kosten richten sich oft nach der Nutzung.", q:"Gibt es eine API? Was geschieht mit Eingaben über die API (Speicherung, Training, Löschfristen), und wie lassen sich Modelle oder Anbieter wechseln?", w:"API-Dokumentation, Nutzungsbedingungen für die API, Preismodell, Datenschutzhinweise zur Schnittstellennutzung."},
+  {id:"closedsource", g:"offen", t:"Closed Source", e:"Proprietäre Modelle, die nur über den Anbieter nutzbar sind (zwischen offen und geschlossen steht die Nutzung per API): meist sehr leistungsstark und bequem, aber kaum nachprüfbar und mit Abhängigkeit vom Anbieter.", q:"Welche Abhängigkeiten entstehen, und was passiert, wenn der Anbieter Preise oder Bedingungen ändert?", w:"Vertragsbedingungen, Exportmöglichkeiten, Alternativen."},
+  {id:"transparenz", g:"offen", t:"Transparenz und Erklärbarkeit", e:"Wie nachvollziehbar Funktionsweise, Datenquellen, Grenzen, Trainingsdaten, Urheberrecht und Arbeitsbedingungen beim Training dokumentiert sind und ob KI-Ergebnisse gekennzeichnet werden. Vieles ist nur teilweise nachprüfbar.", q:"Ist dokumentiert, wie das Tool funktioniert, welche Daten es nutzt, welche Grenzen es hat und wie KI-Ergebnisse gekennzeichnet werden?", w:"Modellkarte, Systemkarte, technische Dokumentation, unabhängige Berichte."},
+  {id:"governance", g:"verantwortung", t:"Verantwortung, Prüfung und Governance", e:"Wer Einsatz und Ergebnisse verantwortet und welche Regeln für Kennzeichnung, menschliche Kontrolle, Prüfungsintegrität und wissenschaftliche Integrität gelten.", q:"Wer verantwortet Einsatz und Ergebnisse, und gibt es Regeln für Kennzeichnung, menschliche Kontrolle und Integrität?", w:"Leitlinien deiner Einrichtung, Prüfungsordnungen, Regeln guter wissenschaftlicher Praxis."},
+  {id:"nachhaltigkeit", g:"verantwortung", t:"Nachhaltigkeit und Ressourcenverbrauch", e:"Energie- und Ressourcenverbrauch von Training und Nutzung. Kleinere Modelle sparen oft viel; belastbare Angaben der Anbieter sind selten.", q:"Ist die Modellgröße für meine Aufgabe angemessen? Gibt es belastbare Angaben?", w:"Nachhaltigkeitsberichte, Angaben zum Rechenzentrum; kleinere Modelle als Vergleich."},
+  {id:"bias", g:"verantwortung", t:"Bias, Fairness und inklusive Repräsentation", e:"Ob unterschiedliche Sprachen, Perspektiven, Geschlechter, Herkünfte und Fachkontexte angemessen berücksichtigt werden und Ergebnisse Stereotype vermeiden.", q:"Werden unterschiedliche Sprachen, Perspektiven und Gruppen angemessen berücksichtigt?", w:"Eigene Testfälle mit unterschiedlichen Perspektiven; Modellkarten und Fairness-Berichte."},
+  {id:"ethik", g:"verantwortung", t:"Ethik (soweit nachprüfbar)", e:"Belegbare Selbstverpflichtungen, Audits und Zertifizierungen. Es zählt, was sich nachprüfen lässt, nicht, was ein Anbieter über sich sagt.", q:"Welche belegbaren Selbstverpflichtungen, Audits oder Zertifizierungen gibt es?", w:"Prüfberichte und Zertifikate statt Selbstbeschreibungen; Lücken benennen."}
+];
+var CRITBY = {}; CRIT.forEach(function(c){ CRITBY[c.id]=c; });
+
+var HAL = [
+  {id:"kontrolle", l:"Beste Ergebnisse haben Vorrang, auch bei Cloud-Verarbeitung.", r:"Kontrolle über meine Daten hat Vorrang, auch mit schlechteren Ergebnissen.", tl:"Leistung vor Datenkontrolle", tr:"Datenkontrolle vor Leistung"},
+  {id:"offen", l:"Closed Source ist in Ordnung, wenn das Tool gut funktioniert.", r:"Offene Modelle und Quellen sind mir wichtig, auch mit Einbußen.", tl:"pragmatisch bei Offenheit", tr:"Offenheit ist wichtig"},
+  {id:"ressourcen", l:"Der Ressourcenverbrauch spielt für meine Wahl kaum eine Rolle.", r:"Ich wähle sparsamere Modelle, wo sie ausreichen.", tl:"Ressourcen zweitrangig", tr:"sparsame Modelle bevorzugt"},
+  {id:"denken", l:"KI soll mir möglichst viel Arbeit abnehmen.", r:"KI soll mein Denken und Lernen unterstützen, nicht ersetzen.", tl:"KI nimmt Arbeit ab", tr:"KI unterstützt eigenes Denken"}
+];
+
+var STEPS = ["Kontext","Aufgabe","Daten","Kriterien und Haltung"];
+var PAUSE = [
+  "Für wen triffst du diese Entscheidung: nur für dich oder auch für andere, etwa Lernende, Kolleg:innen oder Teilnehmende?",
+  "Willst du eine Aufgabe abgeben oder eine Fähigkeit aufbauen? Das führt oft zu unterschiedlichen Tools.",
+  "Was würdest du nie in ein Tool eingeben, dessen Datenverarbeitung du nicht nachvollziehen kannst?",
+  "Welches Kriterium würdest du opfern, wenn zwei sich widersprechen? Die Abwägungen unten zeigen dir, wo Zielkonflikte entstehen können."
+];
+var PRECHECK = [
+  "Ich kann mein Ziel in einem Satz formulieren.",
+  "Ich weiß, welche Daten ich eingeben würde und wie sensibel sie sind.",
+  "Ich weiß, wer von meiner Entscheidung betroffen ist.",
+  "Ich habe geprüft, ob meine Einrichtung schon ein Angebot oder Regeln hat.",
+  "Ich habe überlegt, woran ich nach vier Wochen merke, ob das Tool hilft.",
+  "Ich habe überlegt, welche Teile der Aufgabe bewusst menschlich bleiben sollen."
+];
+
+/* ---------- Zustand ---------- */
+function freshState(){ return {mode:"guided", step:0, ctxs:[], tasks:[], goal:"", data:null, extra:{}, euOnly:false, prios:[], hal:{}, tools:["","",""], mx:{}, notes:{}, chk:{}}; }
+var state = freshState();
+var focusNext = false;
+var EXTRA = [
+  {id:"minors", t:"Kinder oder Jugendliche sind betroffen", d:"Zum Beispiel Schüler:innen oder Jugendgruppen", s:"Minderjährige betroffen"},
+  {id:"group", t:"Das Tool soll von mehreren Personen oder einer ganzen Einrichtung genutzt werden", d:"Team, Klasse, Fachbereich oder Organisation", s:"Nutzung durch viele"},
+  {id:"offline", t:"Ich brauche das Tool offline oder ohne Cloud", d:"Zum Beispiel unterwegs oder bei unsicherer Verbindung", s:"offline oder ohne Cloud"}
+];
+function hasCtx(id){ return state.ctxs.indexOf(id)>-1; }
+function ctxList(){ return CTX.filter(function(c){ return hasCtx(c.id); }); }
+function ctxNames(){ return ctxList().map(function(c){ return CTXNAME[c.id]; }).join(", "); }
+function hasX(id){ return !!state.extra[id]; }
+function extraTexts(){ return EXTRA.filter(function(x){ return hasX(x.id); }).map(function(x){ return x.s; }); }
+
+/* ---------- Ansichten ---------- */
+function progressHtml(){
+  var li = STEPS.map(function(_,i){ return '<li class="'+(i<state.step?"done":(i===state.step?"now":""))+'"></li>'; }).join("");
+  return '<ol class="prog" aria-hidden="true">'+li+'</ol><p class="progtxt">Schritt '+(state.step+1)+' von 4: '+STEPS[state.step]+' <span class="hint">(alle Angaben optional)</span></p>';
+}
+function pauseHtml(){ return '<div class="pause"><b>Kurz innehalten</b>'+esc(PAUSE[state.step])+'</div>'; }
+function navHtml(last){
+  return '<div class="nav"><button type="button" class="btn ghost" data-action="back"'+(state.step===0?' disabled':'')+'>Zurück</button>'+
+    '<button type="button" class="btn" id="next" data-action="next">'+(last?"Ergebnis anzeigen":"Weiter")+'</button></div>'+(last?'':'<div class="row-btns"><button type="button" class="btn ghost" data-action="result">Direkt zum Ergebnis</button></div>');
+}
+function critOpt(c, checkable){
+  return '<label class="opt"><input type="checkbox" name="prio" value="'+c.id+'"'+(state.prios.indexOf(c.id)>-1?" checked":"")+'><span><b>'+esc(c.t)+'</b><span class="d">'+esc(c.e)+'</span></span><span class="n" aria-hidden="true"></span></label>';
+}
+function stepHtml(){
+  var s = state.step, h = "";
+  if(s===0){
+    h += '<h2 tabindex="-1">In welchem Zusammenhang suchst du ein KI-Tool?</h2><p class="hint">Mehrfachauswahl möglich, wenn mehrere Rollen zutreffen. Du kannst auch überspringen.</p><fieldset class="opts two"><legend class="sr">Kontext</legend>';
+    CTX.forEach(function(c){ h += '<label class="opt"><input type="checkbox" name="ctx" value="'+c.id+'"'+(hasCtx(c.id)?" checked":"")+'><span><b>'+esc(c.t)+'</b><span class="d">'+esc(c.d)+'</span></span></label>'; });
+    h += '</fieldset>';
+  } else if(s===1){
+    h += '<h2 tabindex="-1">Was möchtest du konkret tun?</h2><p class="hint">Mehrfachauswahl möglich. Du kannst auch überspringen.</p><fieldset class="opts"><legend class="sr">Aufgaben</legend>';
+    if(!state.ctxs.length) h += '<p class="hint">Du hast keinen Kontext gewählt. Gehe zurück, um einen Kontext zu wählen, oder überspringe diesen Schritt.</p>';
+    ctxList().forEach(function(cx){
+      if(state.ctxs.length>1) h += '<h3 style="margin:.6rem 0 0">'+esc(CTXNAME[cx.id])+'</h3>';
+      var taskOpt = function(t){ var key = cx.id+"|"+t.id; return '<label class="opt"><input type="checkbox" name="task" value="'+key+'"'+(state.tasks.indexOf(key)>-1?" checked":"")+'><span><b>'+esc(t.t)+'</b></span></label>'; };
+      h += TASKS[cx.id].filter(function(t){ return !t.g; }).map(taskOpt).join("");
+      var gnames = []; TASKS[cx.id].forEach(function(t){ if(t.g && gnames.indexOf(t.g)<0) gnames.push(t.g); });
+      gnames.forEach(function(gn){
+        var gt = TASKS[cx.id].filter(function(t){ return t.g===gn; }), isOpen = gt.some(function(t){ return state.tasks.indexOf(cx.id+"|"+t.id)>-1; });
+        h += '<details class="crit"'+(isOpen?' open':'')+'><summary>'+esc(gn)+' (optional)</summary><div class="opts" style="margin:.6rem 0 0">'+gt.map(taskOpt).join("")+'</div></details>';
+      });
+    });
+    h += '</fieldset><label for="goal"><b>Dein Ziel in einem Satz</b> <span class="hint">(optional)</span></label><textarea id="goal" data-field="goal" placeholder="Zum Beispiel: Ich möchte Interviews schneller transkribieren, ohne dass die Aufnahmen meinen Rechner verlassen.">'+esc(state.goal)+'</textarea>';
+  } else if(s===2){
+    h += '<h2 tabindex="-1">Wie sensibel sind die Daten, die du eingeben würdest?</h2><p class="hint">Wähle die höchste Stufe, die vorkommt. Du kannst auch überspringen.</p><fieldset class="opts"><legend class="sr">Datensensibilität</legend>';
+    DATA.forEach(function(d){ h += '<label class="opt"><input type="radio" name="data" value="'+d.id+'"'+(state.data===d.id?" checked":"")+'><span><b>'+esc(d.t)+'</b><span class="d">'+esc(d.d)+'</span></span></label>'; });
+    h += '</fieldset>';
+    h += '<details class="crit"'+(extraTexts().length?' open':'')+'><summary>Zusatzangaben (optional)</summary><p class="hint" style="margin-top:.5rem">Mehrfachauswahl möglich. Das schärft die Vorauswahl, du kannst aber auch überspringen.</p><fieldset class="opts"><legend class="sr">Zusatzangaben</legend>'+EXTRA.map(function(x){ return '<label class="opt"><input type="checkbox" name="extra" value="'+x.id+'"'+(hasX(x.id)?" checked":"")+'><span><b>'+esc(x.t)+'</b><span class="d">'+esc(x.d)+'</span></span></label>'; }).join("")+'</fieldset></details>';
+  } else {
+    h += '<h2 tabindex="-1">Was ist dir bei der Auswahl wichtig?</h2><p class="hint">Wähle beliebig viele Kriterien. Die Reihenfolge deiner Auswahl zeigt deine Gewichtung: Was du zuerst anklickst, zählt am meisten. Du kannst auch alles überspringen, dann nutzen wir eine Standardauswahl.</p><p class="count" id="count" aria-live="polite"></p>';
+    h += '<div class="grp"><h3>Häufig wichtig</h3><div class="opts">'+CRIT.filter(function(c){return c.core;}).map(function(c){ return critOpt(c); }).join("")+'</div></div>';
+    var restOpen = state.prios.some(function(id){ return !CRITBY[id].core; });
+    h += '<details class="crit"'+(restOpen?' open':'')+'><summary>Weitere Kriterien nach Thema ('+CRIT.filter(function(c){return !c.core;}).length+')</summary>';
+    GROUPS.forEach(function(g){
+      var rest = CRIT.filter(function(c){ return c.g===g.id && !c.core; }); if(!rest.length) return;
+      h += '<div class="grp" style="margin-top:.8rem"><h3>'+esc(g.t)+'</h3><div class="opts">'+rest.map(function(c){ return critOpt(c); }).join("")+'</div></div>';
+    });
+    h += '</details>';
+    h += '<details class="crit"><summary>Optional: Abwägungen zu deiner Haltung</summary><p class="hint" style="margin-top:.5rem">Wähle den Punkt, der deiner Haltung am nächsten kommt.</p>';
+    HAL.forEach(function(x){
+      h += '<fieldset class="scale"><legend class="sr">'+esc(x.l)+' oder '+esc(x.r)+'</legend><div class="ends"><span>'+esc(x.l)+'</span><span>'+esc(x.r)+'</span></div><div class="dots">';
+      for(var i=1;i<=5;i++){ h += '<label><input type="radio" name="hal_'+x.id+'" value="'+i+'"'+(state.hal[x.id]===i?" checked":"")+' aria-label="Stufe '+i+' von 5"></label>'; }
+      h += '</div></fieldset>';
+    });
+    h += '</details>';
+  }
+  return h + pauseHtml() + navHtml(s===3);
+}
+function viewGuided(){ return state.step===4 ? viewResult() : '<div class="panel">'+progressHtml()+stepHtml()+'</div>'; }
+
+/* ---------- Ergebnis-Logik ---------- */
+function taskObjs(){ var out = [], seen = {}; ctxList().forEach(function(cx){ (TASKS[cx.id]||[]).forEach(function(t){ if(state.tasks.indexOf(cx.id+"|"+t.id)>-1 && !seen[t.t]){ seen[t.t]=1; out.push(t); } }); }); return out; }
+function hv(k){ return state.hal[k]==null ? null : state.hal[k]; }
+function hasP(id){ return state.prios.indexOf(id)>-1; }
+function sensitive(){ return state.data==="personal" || state.data==="high"; }
+
+function computeCats(){
+  var map = {};
+  taskObjs().forEach(function(t){ t.c.forEach(function(c){ (map[c]=map[c]||{tasks:[],added:false}).tasks.push(t.t); }); });
+  if(!Object.keys(map).length) map.gpai = {tasks:[],added:false,generic:true};
+  var wantControl = (hv("kontrolle")!==null && hv("kontrolle")>=4) || hasP("lokal") || hasP("sitz") || hasP("datenschutz");
+  var out = {near:[], caution:[], alt:[]};
+  ["lokal","inst"].forEach(function(id){
+    var need = (id==="lokal" && (sensitive() || wantControl || hasX("offline") || hasP("opensource") || (hv("offen")!==null && hv("offen")>=4))) || (id==="inst" && (sensitive() || hasCtx("entscheid") || hasX("group") || hasP("datenschutz")));
+    if(need && !map[id]) map[id]={tasks:[],added:true};
+  });
+  Object.keys(map).forEach(function(id){
+    var c = CATS[id], m = map[id], notes = [];
+    var cautious = c.cloud && (sensitive() || (hv("kontrolle")!==null && hv("kontrolle")>=4 && !c.local));
+    if(c.cloud && state.data==="high") notes.push("Bei besonders sensiblen Daten nur nutzen, wenn Rechtsgrundlage, Vertrag und Einwilligungen geklärt sind, oder auf eine lokale Variante ausweichen.");
+    else if(c.cloud && state.data==="personal") notes.push("Personenbezogene Daten: AV-Vertrag, Speicherort und Training-Opt-out prüfen und vor dem Hochladen anonymisieren.");
+    else if(cautious) notes.push("Du gewichtest Datenkontrolle hoch. Prüfe, ob es EU-Hosting, Selbsthosting oder eine lokale Variante gibt.");
+    if(hasCtx("schule") && c.cloud && sensitive()) notes.push("Schule: Welche Tools zugelassen sind, regeln Länder und Schulträger unterschiedlich. Frage Schulleitung und Datenschutzbeauftragte.");
+    if(hasX("minors") && c.cloud) notes.push("Kinder oder Jugendliche betroffen: Altersgrenzen, Einwilligung der Erziehungsberechtigten und Vorgaben des Trägers prüfen.");
+    if(hasX("offline") && c.cloud && !c.local) notes.push("Du brauchst Offline-Betrieb: Dieses Tool läuft meist nur mit Internetverbindung.");
+    if(hasCtx("forschung") && c.cloud && sensitive()) notes.push("Forschung: Einwilligung und Datenmanagementplan müssen die KI-gestützte Verarbeitung abdecken; bei Bedarf Ethikvotum prüfen.");
+    var item = {id:id, c:c, tasks:m.tasks, added:m.added, generic:!!m.generic, notes:notes};
+    if(m.added) out.alt.push(item); else if(cautious) out.caution.push(item); else out.near.push(item);
+  });
+  [out.near,out.caution,out.alt].forEach(function(a){ a.sort(function(x,y){ return x.c.n.localeCompare(y.c.n,"de"); }); });
+  return out;
+}
+function computeTensions(){
+  var T = [], k = hv("kontrolle"), o = hv("offen"), r = hv("ressourcen"), d = hv("denken");
+  var privacy = hasP("datenschutz")||hasP("sitz")||hasP("lokal")||sensitive()||(k!==null&&k>=4);
+  var power = hasP("qualitaet")||hasP("benchmarks")||(k!==null&&k<=2);
+  if(privacy && power) T.push({t:"Spitzenleistung und Datenkontrolle", x:"Die leistungsstärksten Modelle laufen oft nur in der Cloud. Lokale oder selbst gehostete Modelle sind kontrollierbarer, bleiben aber teils zurück.", q:"Welche deiner Aufgaben brauchen wirklich Spitzenleistung, und welche lassen sich mit kleineren, lokalen Modellen lösen?"});
+  if(hasP("kosten") && (hasP("datenschutz")||sensitive())) T.push({t:"Niedrige Kosten und Datenschutz", x:"Kostenlose Angebote haben häufig schwächere vertragliche Zusagen. Gute Verträge kosten Geld oder kommen über deine Einrichtung.", q:"Gibt es eine Lizenz deiner Einrichtung, und was wäre dir geklärter Datenschutz wert?"});
+  if((hasP("opensource")||(o!==null&&o>=4)) && power) T.push({t:"Offenheit und Leistung", x:"Offene Modelle sind transparenter und besser kontrollierbar, aber nicht immer so leistungsstark wie geschlossene.", q:"Welche Form von Offenheit brauchst du wirklich: Nachprüfbarkeit, Unabhängigkeit oder Selbstbetrieb?"});
+  if(hasP("closedsource") && (hasP("transparenz")||hasP("datenschutz")||sensitive())) T.push({t:"Closed Source und Nachprüfbarkeit", x:"Bei geschlossenen Modellen kannst du Verarbeitung und Trainingsbedingungen kaum selbst prüfen und musst dem Anbieter vertrauen.", q:"Welche Belege (Verträge, Audits, Zertifikate) würden dir genügen?"});
+  if((hasP("nachhaltigkeit")||(r!==null&&r>=4)) && (hasP("qualitaet")||hasP("benchmarks")||hasP("sprache"))) T.push({t:"Ressourcenschonung und große Modelle", x:"Große, multimodale Modelle verbrauchen meist mehr Energie als kleine, aufgabenspezifische. Belastbare Verbrauchsangaben fehlen oft.", q:"Reicht für diese Aufgabe ein kleineres Modell, oder ist sie den höheren Verbrauch wert?"});
+  if(hasP("usability") && (hasP("lokal")||(k!==null&&k>=4))) T.push({t:"Komfort und Kontrolle", x:"Lokale Lösungen verlangen Einrichtung und Wartung. Fertige Cloud-Dienste sind bequemer.", q:"Wer richtet das ein und betreut es, und wie viel Aufwand ist realistisch?"});
+  if(d!==null && d<=2 && (hasCtx("lernen")||hasCtx("schule")||hasCtx("hs"))) T.push({t:"Arbeit abnehmen und Lernen fördern", x:"Wenn Lernen das Ziel ist, kann Abnehmen kontraproduktiv sein, denn der Lerneffekt entsteht oft durch die eigene Anstrengung.", q:"Welche Fähigkeiten sollen bei dir oder den Lernenden bleiben, und welche Teile darf die KI übernehmen?"});
+  return T;
+}
+function computeCriteria(){
+  var list = state.prios.map(function(id){ return {id:id, auto:false}; });
+  var add = [];
+  if(!state.prios.length) ["anwendungsfall","qualitaet","datenschutz","kosten","usability"].forEach(function(id){ list.push({id:id, auto:true, def:true}); });
+  if(sensitive()) add = add.concat(["datenschutz","sitz","bedingungen","recht"]);
+  if(state.data==="high" || hasX("offline")) add.push("lokal");
+  if(hasX("group")) add = add.concat(["kosten","integration","usability","anbieter"]);
+  if(hasCtx("schule") || hasX("minors")) add = add.concat(["bedingungen","datenschutz","access","sicherheit","recht"]);
+  if(hasCtx("entscheid")) add = add.concat(["kosten","bedingungen","datenschutz","access","integration","transparenz","recht","anbieter","governance"]);
+  if(hasCtx("forschung")) add.push("transparenz","governance");
+  if(hasCtx("hs") || hasCtx("schule")) add.push("governance");
+  add.forEach(function(id){ if(!list.some(function(x){return x.id===id;})) list.push({id:id, auto:true}); });
+  return list;
+}
+function haltungTexts(){
+  var out = [];
+  HAL.forEach(function(x){
+    var v = hv(x.id); if(v===null) return;
+    out.push(v<=2 ? x.tl : (v>=4 ? x.tr : "ausgewogen: "+x.tl+" / "+x.tr));
+  });
+  return out;
+}
+
+function viewResult(){
+  var cats = computeCats(), tens = computeTensions(), crit = computeCriteria();
+  var h = '<div class="panel"><h2 tabindex="-1">Deine erste Vorauswahl</h2><p class="lead">Das ist kein Ranking. Die Kategorien sind alphabetisch sortiert und zeigen, wo ein Blick lohnt und wo du genauer hinsehen solltest.</p>';
+  var pr = state.prios.map(function(id,i){ return (i+1)+". "+CRITBY[id].t; }).join(", ");
+  var rows = '', tk = taskObjs(), xt = extraTexts(), ht = haltungTexts();
+  if(state.ctxs.length) rows += '<dt>Kontext</dt><dd>'+esc(ctxNames())+'</dd>';
+  if(tk.length) rows += '<dt>Aufgaben</dt><dd>'+esc(tk.map(function(t){return t.t;}).join("; "))+'</dd>';
+  if(state.goal.trim()) rows += '<dt>Dein Ziel</dt><dd>'+esc(state.goal.trim())+'</dd>';
+  if(state.data) rows += '<dt>Daten</dt><dd>'+esc(DATANAME[state.data])+'</dd>';
+  if(xt.length) rows += '<dt>Zusatz</dt><dd>'+esc(xt.join("; "))+'</dd>';
+  if(state.prios.length) rows += '<dt>Wichtig</dt><dd>'+esc(pr)+'</dd>';
+  if(ht.length) rows += '<dt>Haltung</dt><dd>'+esc(ht.join("; "))+'</dd>';
+  h += rows ? '<div class="sum"><dl>'+rows+'</dl></div>' : '<p class="hint">Du hast alle Angaben übersprungen. Hier ist ein allgemeiner Einstieg; mit „Eingaben ändern“ kannst du jederzeit nachschärfen.</p>';
+  if(tens.length){
+    h += '<section class="sec"><h3>Wo sich deine Wünsche widersprechen können</h3>';
+    tens.forEach(function(t){ h += '<div class="tension"><b>'+esc(t.t)+'</b><p>'+esc(t.x)+'</p><p><i>'+esc(t.q)+'</i></p></div>'; });
+    h += '</section>';
+  }
+  function catCard(it, cls){
+    var s = '<article class="cat '+cls+'"><h4>'+esc(it.c.n)+'</h4><p>'+esc(it.c.w)+'</p>';
+    s += '<p class="why">'+(it.added ? "Ergänzt wegen deiner Datenlage oder Haltung." : (it.generic ? "Allgemeiner Einstiegspunkt, weil du keine Aufgabe gewählt hast." : "Passt zu: "+esc(it.tasks.join("; "))+"."))+'</p>';
+    it.notes.forEach(function(n){ s += '<div class="vorb">'+esc(n)+'</div>'; });
+    var ex = examplesFor(it.id);
+    if(ex.length) s += '<details class="sm ex"><summary>Beispiele aus der Sammlung (<span class="exn">'+ex.length+'</span>)</summary><p class="hint" style="margin:.3rem 0 0">Keine Empfehlung und nicht vollständig. EU/EFTA: Firmensitz laut european-alternatives.eu, der Tool-Sammlung oder Presseberichten (Stand Oktober 2026). Das sagt nichts darüber, wo die Daten verarbeitet werden: Eingebundene Modelle, Unterauftragnehmer, Hosting oder Support können außerhalb der EU liegen. Das ersetzt keine eigene Prüfung von Auftragsverarbeitungsvertrag und Unterauftragnehmerliste.</p><ul>'+ex.map(function(t){ return '<li'+(t.r ? '' : ' class="noneu"')+'>'+((t.u && /^https:\/\//.test(t.u)) ? '<a href="'+esc(t.u)+'" target="_blank" rel="noopener">'+esc(t.n)+'</a>' : esc(t.n))+(t.r ? ' <span class="tag">'+esc(t.r)+(t.l ? ' · '+esc(t.l) : '')+'</span>' : '')+(t.d ? ' – '+esc(t.d) : '')+'</li>'; }).join("")+'<li class="noeu-msg" hidden>Keine europäischen Beispiele in der Sammlung.</li></ul></details>';
+    s += '<details class="sm"><summary>Darauf achten</summary><ul>'+it.c.a.map(function(a){return '<li>'+esc(a)+'</li>';}).join("")+'</ul></details></article>';
+    return s;
+  }
+  if(cats.near.length || cats.caution.length || cats.alt.length) h += '<label class="opt" style="margin-top:1.4rem"><input type="checkbox" data-field="euonly"'+(state.euOnly?' checked':'')+'><span><b>Nur europäische Beispiele zeigen</b><span class="d">Blendet bei den Beispiel-Tools alle Einträge ohne EU- oder EFTA-Kennzeichnung aus. Die Kennzeichnung betrifft den Firmensitz; wo die Daten tatsächlich verarbeitet werden, musst du separat prüfen.</span></span></label>';
+  if(cats.near.length) h += '<section class="sec"><h3>Naheliegende Toolkategorien</h3>'+cats.near.map(function(i){return catCard(i,"");}).join("")+'</section>';
+  if(cats.caution.length) h += '<section class="sec"><h3>Mit Vorbehalt prüfen</h3><p class="hint">Passen zu deinen Aufgaben, kollidieren aber mit deiner Datenlage oder Haltung.</p>'+cats.caution.map(function(i){return catCard(i,"caution");}).join("")+'</section>';
+  if(cats.alt.length) h += '<section class="sec"><h3>Alternativen für mehr Datenkontrolle</h3>'+cats.alt.map(function(i){return catCard(i,"");}).join("")+'</section>';
+  if(!cats.near.length && !cats.caution.length && !cats.alt.length) h += '<p class="sec">Für deine Aufgaben ist keine Toolkategorie hinterlegt. Wichtig ist hier der Prozess.</p>';
+  if(hasCtx("entscheid")){
+    h += '<section class="sec gov"><h3>Prozess statt nur Tool: Pilotierung und Rahmen</h3><ol>'+
+      '<li>Bedarfe verschiedener Gruppen erheben, bevor Produkte betrachtet werden.</li>'+
+      '<li>Rahmen klären: Datenschutzbeauftragte, Datenschutz-Folgenabschätzung, AV-Vertrag, gegebenenfalls Personal- oder Betriebsrat.</li>'+
+      '<li>KI-Kompetenz aufbauen: Der EU AI Act verlangt sie von Personen, die KI-Systeme einsetzen (Art. 4).</li>'+
+      '<li>Kleine Pilotgruppen mit vorab festgelegten Erfolgskriterien starten.</li>'+
+      '<li>Auswerten, Ausstieg und Alternativen mitdenken, Regeln laufend anpassen.</li></ol></section>';
+  }
+  h += '<section class="sec"><h3>Kriterien für deinen Toolvergleich</h3><p class="hint">'+(state.prios.length ? 'Deine Kriterien stehen zuerst. ' : 'Du hast keine Kriterien gewählt; die Standardauswahl ist als <span class="tag">Standard</span> markiert. ')+'<span class="tag">ergänzt</span> markiert Kriterien, die sich aus deiner Situation ergeben.</p>';
+  crit.forEach(function(x){
+    var c = CRITBY[x.id];
+    h += '<details class="crit"><summary>'+esc(c.t)+(x.auto?' <span class="tag">'+(x.def?'Standard':'ergänzt')+'</span>':'')+'</summary><ul><li>'+esc(c.e)+'</li><li><b>Prüffrage:</b> '+esc(c.q)+'</li><li><b>Wo prüfen:</b> '+esc(c.w)+'</li></ul></details>';
+  });
+  h += '<details class="crit"><summary>Eigene Vergleichsmatrix ausfüllen</summary><p class="hint" style="margin-top:.5rem">Trage bis zu drei Tools ein. Es gibt bewusst keine Gesamtsumme: Du entscheidest, was schwerer wiegt.</p><div class="tablewrap"><table><thead><tr><th scope="col">Kriterium</th>';
+  for(var i=0;i<3;i++) h += '<th scope="col"><label class="sr" for="tool'+i+'">Name Tool '+(i+1)+'</label><input type="text" id="tool'+i+'" data-field="tool" data-i="'+i+'" placeholder="Tool '+(i+1)+'" value="'+esc(state.tools[i])+'"></th>';
+  h += '<th scope="col">Notiz oder Fundstelle</th></tr></thead><tbody>';
+  crit.forEach(function(x){
+    var c = CRITBY[x.id];
+    h += '<tr><th scope="row">'+esc(c.t)+'</th>';
+    for(var j=0;j<3;j++){
+      var key = x.id+"|"+j, val = state.mx[key]||"";
+      h += '<td><label class="sr" for="m_'+x.id+'_'+j+'">'+esc(c.t)+', Tool '+(j+1)+'</label><select id="m_'+x.id+'_'+j+'" data-field="mx" data-key="'+key+'">'+
+        [["","nicht geprüft"],["erfüllt","erfüllt"],["teilweise","teilweise"],["nein","nicht erfüllt"],["unklar","unklar"]].map(function(o){ return '<option value="'+o[0]+'"'+(val===o[0]?" selected":"")+'>'+o[1]+'</option>'; }).join("")+'</select></td>';
+    }
+    h += '<td><label class="sr" for="n_'+x.id+'">Notiz zu '+esc(c.t)+'</label><input type="text" id="n_'+x.id+'" data-field="note" data-key="'+x.id+'" value="'+esc(state.notes[x.id]||"")+'"></td></tr>';
+  });
+  h += '</tbody></table></div></details></section>';
+  h += '<section class="sec"><div class="pause"><b>Bevor du dich festlegst</b><ul>'+
+    '<li>Wer ist von meiner Entscheidung betroffen, und wurde diese Gruppe gefragt?</li>'+
+    '<li>Was möchte ich bewusst nicht an eine KI abgeben?</li>'+
+    '<li>Woran merke ich nach vier Wochen, ob das Tool wirklich hilft?</li>'+
+    '<li>Was ist mein Plan, wenn das Tool wegfällt oder sich die Bedingungen ändern?</li></ul></div></section>';
+  h += '<section class="sec"><details class="crit"><summary>Zusammenfassung als Text mitnehmen</summary><label class="sr" for="export">Zusammenfassung als Text</label><textarea id="export" readonly style="min-height:11rem;margin-top:.5rem"></textarea><div class="row-btns"><button type="button" class="btn" data-action="copy">Text kopieren</button><button type="button" class="btn ghost" data-action="print">Drucken</button><span id="copied" class="ok" aria-live="polite"></span></div></details></section>';
+  h += '<div class="nav"><button type="button" class="btn ghost" data-action="edit">Eingaben ändern</button><button type="button" class="btn ghost" data-action="restart">Neu starten</button></div></div>';
+  return h;
+}
+function buildMd(){
+  var cats = computeCats(), crit = computeCriteria(), L = [];
+  L.push("# Meine Auswahlkriterien für KI-Tools","");
+  if(state.ctxs.length) L.push("Kontext: "+ctxNames());
+  if(taskObjs().length) L.push("Aufgaben: "+taskObjs().map(function(t){return t.t;}).join("; "));
+  if(state.goal.trim()) L.push("Ziel: "+state.goal.trim());
+  if(state.data) L.push("Daten: "+DATANAME[state.data]);
+  var xtx = extraTexts(); if(xtx.length) L.push("Zusatz: "+xtx.join("; "));
+  if(state.prios.length) L.push("Wichtig (in Reihenfolge): "+state.prios.map(function(id){return CRITBY[id].t;}).join(", "));
+  var ht = haltungTexts(); if(ht.length) L.push("Haltung: "+ht.join("; "));
+  L.push("","## Toolkategorien (Beispielkategorien, kein Ranking)");
+  cats.near.forEach(function(i){ L.push("- "+i.c.n); });
+  cats.caution.forEach(function(i){ L.push("- "+i.c.n+" (mit Vorbehalt prüfen)"); });
+  cats.alt.forEach(function(i){ L.push("- "+i.c.n+" (Alternative)"); });
+  L.push("","## Vergleich");
+  var names = state.tools.map(function(t,i){ return t.trim()||("Tool "+(i+1)); });
+  crit.forEach(function(x){
+    var c = CRITBY[x.id], parts = [];
+    for(var j=0;j<3;j++){ var v = state.mx[x.id+"|"+j]; if(v) parts.push(names[j]+": "+v); }
+    var note = (state.notes[x.id]||"").trim();
+    L.push("- "+c.t+" – "+c.q+(parts.length?" ["+parts.join("; ")+"]":"")+(note?" Notiz: "+note:""));
+  });
+  return L.join("\n");
+}
+function updateExport(){ var e = document.getElementById("export"); if(e) e.value = buildMd(); }
+function applyEuFilter(){
+  var on = !!state.euOnly;
+  root.classList.toggle("eu-only", on);
+  root.querySelectorAll("details.ex").forEach(function(d){
+    var all = d.querySelectorAll("li:not(.noeu-msg)"), eu = d.querySelectorAll("li:not(.noeu-msg):not(.noneu)");
+    d.querySelector(".exn").textContent = on ? eu.length : all.length;
+    d.querySelector(".noeu-msg").hidden = !(on && eu.length===0);
+  });
+}
+
+/* ---------- Checkliste ---------- */
+function viewCheck(){
+  var h = '<div class="panel checklist"><h2 tabindex="-1">Vorab-Checkliste</h2><p class="hint">Bevor du Tools vergleichst:</p>';
+  PRECHECK.forEach(function(t,i){ h += '<label class="cl"><input type="checkbox" data-field="chk" data-key="pre'+i+'"'+(state.chk["pre"+i]?" checked":"")+'><span>'+esc(t)+'</span></label>'; });
+  h += '<h2 style="margin-top:1.8rem">Kriterien-Checkliste</h2><p class="hint">Hake an, was für dich wichtig ist. Öffne ein Kriterium für Prüffrage und Fundstellen.</p>';
+  GROUPS.forEach(function(g){
+    h += '<div class="grp"><h3>'+esc(g.t)+'</h3>';
+    CRIT.filter(function(c){return c.g===g.id;}).forEach(function(c){
+      h += '<div class="crit" style="display:block;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:.6rem 1rem;margin:0 0 8px"><label class="cl" style="margin:0"><input type="checkbox" data-field="chk" data-key="c_'+c.id+'"'+(state.chk["c_"+c.id]?" checked":"")+'><span><b>'+esc(c.t)+'</b><br><span class="hint">'+esc(c.e)+'</span></span></label><details class="sm"><summary>Prüffrage und Fundstellen</summary><ul><li><b>Prüffrage:</b> '+esc(c.q)+'</li><li><b>Wo prüfen:</b> '+esc(c.w)+'</li></ul></details></div>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="pause"><b>Kurz innehalten</b>Wenn du viele Kriterien angehakt hast (etwa mehr als fünf): Welche würdest du streichen, wenn du dich entscheiden müsstest?</div>';
+  h += '<div class="row-btns"><button type="button" class="btn" data-action="checkresult">Mit diesen Kriterien zum Ergebnis</button><button type="button" class="btn ghost" data-action="mode" data-mode="guided">Zum geführten Weg</button></div></div>';
+  return h;
+}
+
+/* ---------- Steuerung ---------- */
+var root = document.getElementById("app");
+function postHeight(){ try{ parent.postMessage({kiKompassHeight: document.documentElement.scrollHeight}, "*"); }catch(e){} }
+function render(){
+  document.querySelectorAll(".tabs button").forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-mode")===state.mode ? "true":"false"); });
+  root.innerHTML = state.mode==="check" ? viewCheck() : viewGuided();
+  if(state.mode==="guided" && state.step===3) updatePrioUI();
+  if(state.mode==="guided" && state.step<4) updateNav();
+  if(state.mode==="guided" && state.step===4){ updateExport(); applyEuFilter(); }
+  if(focusNext){ var h = root.querySelector("h2"); if(h) h.focus(); focusNext=false; }
+  postHeight();
+}
+function nothingChosen(){
+  var s = state.step;
+  if(s===0) return !state.ctxs.length;
+  if(s===1) return !state.tasks.length && !state.goal.trim();
+  if(s===2) return !state.data && !extraTexts().length;
+  return false;
+}
+function updateNav(){ var n = document.getElementById("next"); if(n && state.step<3) n.textContent = nothingChosen() ? "Überspringen" : "Weiter"; }
+function updatePrioUI(){
+  var boxes = root.querySelectorAll('input[name="prio"]');
+  boxes.forEach(function(b){
+    var i = state.prios.indexOf(b.value);
+    var n = b.parentNode.querySelector(".n"); if(n) n.textContent = i>-1 ? String(i+1) : "";
+  });
+  var c = document.getElementById("count");
+  if(c) c.textContent = state.prios.length ? state.prios.length+" gewählt" : "Noch nichts gewählt (optional)";
+}
+function go(d){ state.step += d; focusNext = true; render(); window.scrollTo(0,0); }
+
+document.addEventListener("click", function(e){
+  var b = e.target.closest("[data-action]"); if(!b) return;
+  var a = b.getAttribute("data-action");
+  if(a==="mode"){ state.mode = b.getAttribute("data-mode"); if(state.mode==="check") state.prios.forEach(function(id){ state.chk["c_"+id] = true; }); focusNext=false; render(); }
+  else if(a==="next") go(1);
+  else if(a==="result"){ state.step = 4; focusNext = true; render(); window.scrollTo(0,0); }
+  else if(a==="back" && state.step>0) go(-1);
+  else if(a==="checkresult"){ var kept = state.prios.filter(function(id){ return state.chk["c_"+id]; }), more = CRIT.filter(function(c){ return state.chk["c_"+c.id] && kept.indexOf(c.id)<0; }).map(function(c){ return c.id; }); if(kept.length+more.length) state.prios = kept.concat(more); state.mode = "guided"; state.step = 4; focusNext = true; render(); window.scrollTo(0,0); }
+  else if(a==="edit"){ state.step = 0; focusNext = true; render(); window.scrollTo(0,0); }
+  else if(a==="restart"){ state = freshState(); focusNext=true; render(); window.scrollTo(0,0); }
+  else if(a==="print"){ try{ window.print(); }catch(err){} }
+  else if(a==="copy"){
+    var t = buildMd(), msg = document.getElementById("copied"), ta = document.getElementById("export");
+    var done = function(ok){ if(msg) msg.textContent = ok ? "Kopiert." : "Bitte den Text im Feld markieren und kopieren."; if(!ok && ta){ ta.focus(); ta.select(); } };
+    var fallback = function(){ if(ta){ ta.select(); try{ done(document.execCommand("copy")); }catch(x){ done(false); } } };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){done(true);}, fallback); } else fallback();
+  }
+});
+document.addEventListener("change", function(e){
+  var el = e.target, n = el.name, f = el.getAttribute("data-field");
+  if(n==="ctx"){ var ci = state.ctxs.indexOf(el.value); if(el.checked && ci<0) state.ctxs.push(el.value); if(!el.checked && ci>-1){ state.ctxs.splice(ci,1); state.tasks = state.tasks.filter(function(k){ return k.split("|")[0]!==el.value; }); } updateNav(); }
+  else if(n==="task"){ var i = state.tasks.indexOf(el.value); if(el.checked && i<0) state.tasks.push(el.value); if(!el.checked && i>-1) state.tasks.splice(i,1); updateNav(); }
+  else if(n==="data"){ state.data = el.value; updateNav(); }
+  else if(n==="extra"){ state.extra[el.value] = el.checked; updateNav(); }
+  else if(n==="prio"){ var j = state.prios.indexOf(el.value); if(el.checked && j<0) state.prios.push(el.value); if(!el.checked && j>-1) state.prios.splice(j,1); updatePrioUI(); updateNav(); }
+  else if(n && n.indexOf("hal_")===0){ state.hal[n.slice(4)] = parseInt(el.value,10); }
+  else if(f==="mx"){ state.mx[el.getAttribute("data-key")] = el.value; updateExport(); }
+  else if(f==="euonly"){ state.euOnly = el.checked; applyEuFilter(); }
+  else if(f==="chk"){ state.chk[el.getAttribute("data-key")] = el.checked; }
+});
+document.addEventListener("input", function(e){
+  var el = e.target, f = el.getAttribute("data-field");
+  if(f==="goal"){ state.goal = el.value; updateNav(); }
+  else if(f==="tool"){ state.tools[parseInt(el.getAttribute("data-i"),10)] = el.value; updateExport(); }
+  else if(f==="note"){ state.notes[el.getAttribute("data-key")] = el.value; updateExport(); }
+});
+document.addEventListener("toggle", postHeight, true);
+window.addEventListener("resize", postHeight);
+window.addEventListener("beforeprint", function(){ document.querySelectorAll("details").forEach(function(d){ d.open = true; }); });
+
+render();
+</script>
+</body>
+</html>
